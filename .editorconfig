@@ -1,0 +1,147 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,md,csproj,props,targets}]
+indent_size = 2
+
+# Frontend — TypeScript / React / CSS. Prettier owns most of this; declare
+# it here so any editor that doesn't load .prettierrc still does the right thing.
+[frontend/**/*.{ts,tsx,js,jsx,mjs,cjs,css,html}]
+indent_size = 2
+
+[*.{cs,vb}]
+# Language rules
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# this. preferences
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method = false:warning
+dotnet_style_qualification_for_event = false:warning
+
+# Language keywords vs BCL types
+dotnet_style_predefined_type_for_locals_parameters_members = true:warning
+dotnet_style_predefined_type_for_member_access = true:warning
+
+# Modifier preferences
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+dotnet_style_readonly_field = true:warning
+
+# Expression-level preferences
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+
+# var preferences
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Expression-bodied members
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = when_on_single_line:suggestion
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_indexers = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+
+# Null-checking preferences
+csharp_style_throw_expression = true:suggestion
+csharp_style_conditional_delegate_call = true:suggestion
+
+# Formatting
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+
+# Naming: async methods end in Async
+dotnet_naming_rule.async_methods_should_be_pascal_case.severity = warning
+dotnet_naming_rule.async_methods_should_be_pascal_case.symbols = async_methods
+dotnet_naming_rule.async_methods_should_be_pascal_case.style = pascal_case_end_in_async
+dotnet_naming_symbols.async_methods.applicable_kinds = method
+dotnet_naming_symbols.async_methods.required_modifiers = async
+dotnet_naming_style.pascal_case_end_in_async.capitalization = pascal_case
+dotnet_naming_style.pascal_case_end_in_async.required_suffix = Async
+
+# Analyzer severities
+dotnet_diagnostic.CA1812.severity = none      # Internal class never instantiated (false positives for DI)
+dotnet_diagnostic.CA1707.severity = none      # Allow underscores in test method names
+dotnet_diagnostic.CA1000.severity = none      # Static members on generic types — required by smart-enum / factory patterns
+dotnet_diagnostic.CA1515.severity = none      # Consider making public types internal
+dotnet_diagnostic.CA1063.severity = none      # Implement IDisposable correctly — false positives on sealed types
+dotnet_diagnostic.CA1034.severity = none      # Nested types should not be visible
+dotnet_diagnostic.CA2007.severity = none      # Consider calling ConfigureAwait — not needed in ASP.NET Core
+dotnet_diagnostic.CA1848.severity = none      # LoggerMessage delegates — micro-perf, not worth boilerplate here
+dotnet_diagnostic.CA1727.severity = none      # Use PascalCase for log parameter names — conflicts with Serilog convention
+dotnet_diagnostic.CA2254.severity = none      # Logging template should be compile-time constant — intentional in cross-cutting
+dotnet_diagnostic.S2139.severity = none       # Log+rethrow pattern is the correct cross-cutting behavior
+dotnet_diagnostic.S1144.severity = none       # Unused private members — false positives on EF Core materialization ctors
+dotnet_diagnostic.S4035.severity = none       # Sealed classes or IEqualityComparer — false positive on DDD base classes
+dotnet_diagnostic.S2094.severity = none       # Empty classes for marker interfaces
+dotnet_diagnostic.S1118.severity = none       # Utility classes with only static members should have private ctor (records suffice)
+dotnet_diagnostic.SA0001.severity = none      # XML comment analysis disabled
+# Missing-doc rules: XML docs are added deliberately on DTOs/commands so Swagger's
+# schema picks them up; we don't require them on every internal handler or method.
+# Kept in sync with the NoWarn list in Directory.Build.props.
+dotnet_diagnostic.CS1591.severity = none      # Missing XML comment for publicly visible type or member
+dotnet_diagnostic.SA1600.severity = none      # Elements should be documented
+dotnet_diagnostic.SA1601.severity = none      # Partial elements should be documented
+dotnet_diagnostic.SA1602.severity = none      # Enumeration items should be documented
+dotnet_diagnostic.SA1201.severity = none      # Element ordering — natural DDD order preferred
+dotnet_diagnostic.SA1202.severity = none      # Elements should be ordered by access
+dotnet_diagnostic.SA1204.severity = none      # Static elements should appear before instance
+dotnet_diagnostic.SA1203.severity = none      # Constant fields should appear before non-constant fields
+dotnet_diagnostic.SA1214.severity = none      # Readonly fields should appear first
+dotnet_diagnostic.SA1306.severity = none      # Field name capitalization — conflicts with common style
+dotnet_diagnostic.SA1309.severity = none      # Field names must not begin with underscore
+dotnet_diagnostic.SA1413.severity = none      # Use trailing comma in multi-line initializers
+dotnet_diagnostic.SA1515.severity = none      # Blank line before single-line comment
+dotnet_diagnostic.SA1516.severity = none      # Elements should be separated by blank line
+dotnet_diagnostic.SA1623.severity = none      # Property doc summary format
+dotnet_diagnostic.SA1629.severity = none      # Documentation text should end with a period
+dotnet_diagnostic.SA1633.severity = none      # File header
+dotnet_diagnostic.SA1636.severity = none      # File header copyright
+dotnet_diagnostic.SA1649.severity = none      # File name should match first type
+dotnet_diagnostic.SA1101.severity = none      # Prefix local calls with this
+dotnet_diagnostic.SA1200.severity = none      # Using directives outside namespace
+dotnet_diagnostic.SA1210.severity = none      # Using directives should be ordered alphabetically — dotnet format handles this
+dotnet_diagnostic.SA1122.severity = none      # Use string.Empty for empty strings
+dotnet_diagnostic.CA1711.severity = none      # Rename types ending in reserved suffixes
+
+# Generated EF migration files — tolerate analyzer noise we don't own.
+[**/Migrations/*.cs]
+dotnet_diagnostic.S4581.severity = none       # new Guid() with no args — EF generator output
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.SA1413.severity = none
+dotnet_diagnostic.SA1402.severity = none
+dotnet_diagnostic.SA1649.severity = none
+dotnet_diagnostic.S1192.severity = none
+dotnet_diagnostic.S125.severity = none
+
+[*Tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.SA1600.severity = none      # Elements must be documented
+dotnet_diagnostic.CA1515.severity = none
