@@ -1,0 +1,164 @@
+### Task Management API — REST Client smoke
+### Use with VS Code REST Client, Rider, or Visual Studio .http runner.
+
+@host = http://localhost:8080
+@email = demo@icon.test
+@password = Passw0rd!
+
+### Health — liveness
+GET {{host}}/health
+
+### Health — readiness (DB ping)
+GET {{host}}/health/ready
+
+### Register
+# @name register
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Login
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+@accessToken = {{login.response.body.$.accessToken}}
+@refreshToken = {{login.response.body.$.refreshToken}}
+
+### List tasks (requires auth)
+GET {{host}}/api/tasks
+Authorization: Bearer {{accessToken}}
+
+### Create task
+# @name createTask
+POST {{host}}/api/tasks
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Ship v1",
+  "description": "Close out the trial backend",
+  "priority": "High",
+  "dueDateUtc": "2026-05-31T00:00:00Z"
+}
+
+@taskId = {{createTask.response.body.$.id}}
+
+### Get task by id
+GET {{host}}/api/tasks/{{taskId}}
+Authorization: Bearer {{accessToken}}
+
+### Update task
+PUT {{host}}/api/tasks/{{taskId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Ship v1 (updated)",
+  "description": "Close out the trial backend — polished",
+  "priority": "Critical",
+  "dueDateUtc": "2026-05-15T00:00:00Z"
+}
+
+### Complete task
+PATCH {{host}}/api/tasks/{{taskId}}/complete
+Authorization: Bearer {{accessToken}}
+
+### Filter completed tasks
+GET {{host}}/api/tasks?status=Completed
+Authorization: Bearer {{accessToken}}
+
+### Reopen task
+PATCH {{host}}/api/tasks/{{taskId}}/reopen
+Authorization: Bearer {{accessToken}}
+
+### Delete task
+DELETE {{host}}/api/tasks/{{taskId}}
+Authorization: Bearer {{accessToken}}
+
+### Refresh tokens (rotates the refresh token)
+POST {{host}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Revoke refresh token (logout)
+POST {{host}}/api/auth/revoke
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###############################################################################
+# Tags
+###############################################################################
+
+### List current user's tags
+GET {{host}}/api/tags
+Authorization: Bearer {{accessToken}}
+
+### Create tag
+# @name createTag
+POST {{host}}/api/tags
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "name": "sprint-1" }
+
+@tagId = {{createTag.response.body.$.id}}
+
+### Rename tag
+PUT {{host}}/api/tags/{{tagId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "name": "sprint-1-renamed" }
+
+### Delete tag (also removes the association from any task referencing it)
+DELETE {{host}}/api/tags/{{tagId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# Tag assignment + filter + drag-and-drop reorder
+###############################################################################
+
+### Create a task with tags
+# @name createTaggedTask
+POST {{host}}/api/tasks
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Tagged task",
+  "priority": "Medium",
+  "tagIds": [ "{{tagId}}" ]
+}
+
+@taggedTaskId = {{createTaggedTask.response.body.$.id}}
+
+### Filter tasks by tag
+GET {{host}}/api/tasks?tagId={{tagId}}&sortBy=Order&sortDirection=Ascending
+Authorization: Bearer {{accessToken}}
+
+### Reorder (drag-and-drop): move task between two neighbours
+PATCH {{host}}/api/tasks/{{taggedTaskId}}/reorder
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "previousTaskId": null,
+  "nextTaskId": null
+}
