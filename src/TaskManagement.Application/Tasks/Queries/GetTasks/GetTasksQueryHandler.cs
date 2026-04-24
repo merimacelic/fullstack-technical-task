@@ -28,30 +28,42 @@ public sealed class GetTasksQueryHandler : IRequestHandler<GetTasksQuery, ErrorO
         var ownerId = _currentUser.UserId ?? throw new InvalidOperationException(
             "GetTasks requires an authenticated user.");
 
-        if (!string.IsNullOrWhiteSpace(request.Status) && !TaskItemStatus.TryFromName(request.Status, out _))
+        if (request.Statuses is { Length: > 0 })
         {
-            return TaskErrors.UnknownStatus(request.Status);
+            foreach (var name in request.Statuses)
+            {
+                if (!TaskItemStatus.TryFromName(name, out _))
+                {
+                    return TaskErrors.UnknownStatus(name);
+                }
+            }
         }
 
-        if (!string.IsNullOrWhiteSpace(request.Priority) && !TaskPriority.TryFromName(request.Priority, out _))
+        if (request.Priorities is { Length: > 0 })
         {
-            return TaskErrors.UnknownPriority(request.Priority);
+            foreach (var name in request.Priorities)
+            {
+                if (!TaskPriority.TryFromName(name, out _))
+                {
+                    return TaskErrors.UnknownPriority(name);
+                }
+            }
         }
 
         var pagination = new PaginationRequest(request.Page, request.PageSize);
 
         var query = _dbContext.Tasks.AsNoTracking().Where(t => t.OwnerId == ownerId);
 
-        if (!string.IsNullOrWhiteSpace(request.Status))
+        if (request.Statuses is { Length: > 0 })
         {
-            var status = TaskItemStatus.FromName(request.Status);
-            query = query.Where(t => t.Status == status);
+            var statuses = request.Statuses.Select(TaskItemStatus.FromName).ToArray();
+            query = query.Where(t => statuses.Contains(t.Status));
         }
 
-        if (!string.IsNullOrWhiteSpace(request.Priority))
+        if (request.Priorities is { Length: > 0 })
         {
-            var priority = TaskPriority.FromName(request.Priority);
-            query = query.Where(t => t.Priority == priority);
+            var priorities = request.Priorities.Select(TaskPriority.FromName).ToArray();
+            query = query.Where(t => priorities.Contains(t.Priority));
         }
 
         if (!string.IsNullOrWhiteSpace(request.Search))
@@ -65,9 +77,12 @@ public sealed class GetTasksQueryHandler : IRequestHandler<GetTasksQuery, ErrorO
                 (t.Description != null && EF.Functions.Like(t.Description, pattern, "\\")));
         }
 
-        if (request.TagId is { } tagGuid)
+        if (request.TagIds is { Length: > 0 })
         {
-            query = query.Where(t => EF.Property<List<Guid>>(t, "_tagIds").Contains(tagGuid));
+            // OR semantics: a task matches if it carries any of the selected tags.
+            var tagIds = request.TagIds;
+            query = query.Where(t =>
+                EF.Property<List<Guid>>(t, "_tagIds").Any(id => tagIds.Contains(id)));
         }
 
         query = ApplySort(query, request.SortBy, request.SortDirection);

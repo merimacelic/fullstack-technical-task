@@ -47,7 +47,7 @@ public class TagEndpointsTests : IntegrationTestBase
         var body = await ReadJsonAsync<TaskResponse>(createTask);
         body.TagIds.ShouldContain(tag.Id);
 
-        var filtered = await Client.GetAsync($"/api/tasks?tagId={tag.Id}");
+        var filtered = await Client.GetAsync($"/api/tasks?tagIds={tag.Id}");
         filtered.StatusCode.ShouldBe(HttpStatusCode.OK);
         var page = await ReadJsonAsync<PagedResult<TaskResponse>>(filtered);
         page.Items.Count.ShouldBe(1);

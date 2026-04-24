@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, CheckCircle2, Pencil, RotateCcw, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
@@ -8,7 +9,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { Badge } from '@/shared/ui/badge';
 import { Separator } from '@/shared/ui/separator';
 import { formatDateTime, formatRelative } from '@/shared/lib/date';
-import { parseProblem } from '@/shared/lib/problemDetails';
+import { parseProblem, problemDetail, problemTitle } from '@/shared/lib/problemDetails';
 import { useGetTagsQuery } from '@/features/tags/api';
 
 import {
@@ -18,11 +19,12 @@ import {
   useReopenTaskMutation,
 } from '../api';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { PriorityBadge } from '../components/PriorityBadge';
-import { StatusBadge } from '../components/StatusBadge';
+import { PriorityPicker } from '../components/PriorityPicker';
+import { StatusPicker } from '../components/StatusPicker';
 import { TaskForm } from '../components/TaskForm';
 
 export function TaskDetailsPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: task, isLoading, error } = useGetTaskByIdQuery(id!, { skip: !id });
@@ -44,7 +46,7 @@ export function TaskDetailsPage() {
       }
     } catch (err) {
       const parsed = parseProblem(err as never);
-      toast.error(parsed.title, { description: parsed.detail });
+      toast.error(t(problemTitle(parsed)), { description: t(problemDetail(parsed)) });
     }
   }
 
@@ -52,11 +54,11 @@ export function TaskDetailsPage() {
     if (!task) return;
     try {
       await deleteTask(task.id).unwrap();
-      toast.success('Task deleted.');
+      toast.success(t('tasks.toast.deleted'));
       navigate(-1);
     } catch (err) {
       const parsed = parseProblem(err as never);
-      toast.error(parsed.title, { description: parsed.detail });
+      toast.error(t(problemTitle(parsed)), { description: t(problemDetail(parsed)) });
     }
   }
 
@@ -70,24 +72,26 @@ export function TaskDetailsPage() {
   }
 
   if (error || !task) {
-    const parsed = error ? parseProblem(error) : { title: 'Not found', detail: 'This task doesn\'t exist or you don\'t have access.' };
+    const parsed = error ? parseProblem(error) : null;
+    const title = parsed ? t(problemTitle(parsed)) : t('tasks.details.notFound.title');
+    const detail = parsed ? t(problemDetail(parsed)) : t('tasks.details.notFound.description');
     return (
       <div className="flex flex-col items-start gap-3">
         <Button variant="ghost" asChild>
           <Link to="/tasks">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to tasks
+            {t('common.backToTasks')}
           </Link>
         </Button>
         <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 p-4">
-          <p className="text-sm font-medium">{parsed.title}</p>
-          <p className="text-sm text-muted-foreground">{parsed.detail}</p>
+          <p className="text-sm font-medium">{title}</p>
+          <p className="text-sm text-muted-foreground">{detail}</p>
         </div>
       </div>
     );
   }
 
-  const taskTags = tags.filter((t) => task.tagIds.includes(t.id));
+  const taskTags = tags.filter((tag) => task.tagIds.includes(tag.id));
   const isCompleted = task.status === 'Completed';
 
   return (
@@ -95,12 +99,12 @@ export function TaskDetailsPage() {
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-1 h-4 w-4" />
-          Back
+          {t('tasks.details.back')}
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setEditOpen(true)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Edit
+            {t('tasks.details.edit')}
           </Button>
           <Button
             variant="outline"
@@ -110,18 +114,18 @@ export function TaskDetailsPage() {
             {isCompleted ? (
               <>
                 <RotateCcw className="mr-2 h-4 w-4" />
-                Reopen
+                {t('tasks.details.reopen')}
               </>
             ) : (
               <>
                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                Mark complete
+                {t('tasks.details.markComplete')}
               </>
             )}
           </Button>
           <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            {t('tasks.details.delete')}
           </Button>
         </div>
       </div>
@@ -129,12 +133,12 @@ export function TaskDetailsPage() {
       <article className="rounded-lg border bg-card p-6 shadow-sm">
         <h1 className="text-2xl font-semibold tracking-tight">{task.title}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <StatusBadge status={task.status} />
-          <PriorityBadge priority={task.priority} />
+          <StatusPicker taskId={task.id} status={task.status} variant="pill" />
+          <PriorityPicker taskId={task.id} priority={task.priority} />
           {task.dueDateUtc && (
             <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" aria-hidden />
-              Due {formatDateTime(task.dueDateUtc)}
+              {t('tasks.details.due', { when: formatDateTime(task.dueDateUtc) })}
             </span>
           )}
         </div>
@@ -153,23 +157,23 @@ export function TaskDetailsPage() {
         {task.description ? (
           <p className="whitespace-pre-wrap text-sm leading-relaxed">{task.description}</p>
         ) : (
-          <p className="text-sm italic text-muted-foreground">No description.</p>
+          <p className="text-sm italic text-muted-foreground">{t('tasks.details.noDescription')}</p>
         )}
 
         <Separator className="my-6" />
 
         <dl className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-3">
           <div>
-            <dt className="text-muted-foreground">Created</dt>
+            <dt className="text-muted-foreground">{t('tasks.details.created')}</dt>
             <dd title={formatDateTime(task.createdAtUtc)}>{formatRelative(task.createdAtUtc)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Updated</dt>
+            <dt className="text-muted-foreground">{t('tasks.details.updated')}</dt>
             <dd title={formatDateTime(task.updatedAtUtc)}>{formatRelative(task.updatedAtUtc)}</dd>
           </div>
           {task.completedAtUtc && (
             <div>
-              <dt className="text-muted-foreground">Completed</dt>
+              <dt className="text-muted-foreground">{t('tasks.details.completed')}</dt>
               <dd title={formatDateTime(task.completedAtUtc)}>{formatRelative(task.completedAtUtc)}</dd>
             </div>
           )}
@@ -180,9 +184,9 @@ export function TaskDetailsPage() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Delete task?"
-        description={`Delete “${task.title}”? This cannot be undone.`}
-        confirmLabel="Delete"
+        title={t('tasks.confirm.delete.title')}
+        description={t('tasks.confirm.delete.description', { title: task.title })}
+        confirmLabel={t('common.delete')}
         destructive
         isLoading={deleting}
         onConfirm={confirmDelete}

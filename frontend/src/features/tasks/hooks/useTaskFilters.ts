@@ -6,25 +6,38 @@ import { useSearchParams } from 'react-router-dom';
 
 import {
   DEFAULT_FILTERS,
+  DEFAULT_VIEW_MODE,
   TASK_PRIORITIES,
   TASK_SORT_FIELDS,
   TASK_STATUSES,
+  TASK_VIEW_MODES,
   type TaskFilters,
   type TaskPriority,
   type TaskSortBy,
   type TaskStatus,
+  type TaskViewMode,
 } from '../types';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 const MIN_PAGE_SIZE = 1;
 const MAX_PAGE_SIZE = 100;
 
-function asStatus(v: string | null): TaskStatus | undefined {
-  return v && (TASK_STATUSES as readonly string[]).includes(v) ? (v as TaskStatus) : undefined;
+function asStatuses(values: string[]): TaskStatus[] | undefined {
+  const valid = values.filter((v): v is TaskStatus =>
+    (TASK_STATUSES as readonly string[]).includes(v),
+  );
+  return valid.length > 0 ? valid : undefined;
 }
 
-function asPriority(v: string | null): TaskPriority | undefined {
-  return v && (TASK_PRIORITIES as readonly string[]).includes(v) ? (v as TaskPriority) : undefined;
+function asPriorities(values: string[]): TaskPriority[] | undefined {
+  const valid = values.filter((v): v is TaskPriority =>
+    (TASK_PRIORITIES as readonly string[]).includes(v),
+  );
+  return valid.length > 0 ? valid : undefined;
+}
+
+function asTagIds(values: string[]): string[] | undefined {
+  return values.length > 0 ? values : undefined;
 }
 
 function asSortBy(v: string | null): TaskSortBy {
@@ -35,6 +48,12 @@ function asSortBy(v: string | null): TaskSortBy {
 
 function asDirection(v: string | null): TaskFilters['sortDirection'] {
   return v === 'Ascending' ? 'Ascending' : DEFAULT_FILTERS.sortDirection;
+}
+
+function asViewMode(v: string | null): TaskViewMode {
+  return v && (TASK_VIEW_MODES as readonly string[]).includes(v)
+    ? (v as TaskViewMode)
+    : DEFAULT_VIEW_MODE;
 }
 
 function clampPage(n: number): number {
@@ -51,15 +70,17 @@ export function useTaskFilters(): {
   setFilter: <K extends keyof TaskFilters>(key: K, value: TaskFilters[K] | undefined) => void;
   resetFilters: () => void;
   pageSizeOptions: readonly number[];
+  viewMode: TaskViewMode;
+  setViewMode: (mode: TaskViewMode) => void;
 } {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const filters = useMemo<TaskFilters>(
     () => ({
-      status: asStatus(searchParams.get('status')),
-      priority: asPriority(searchParams.get('priority')),
+      statuses: asStatuses(searchParams.getAll('statuses')),
+      priorities: asPriorities(searchParams.getAll('priorities')),
       search: searchParams.get('search') ?? undefined,
-      tagId: searchParams.get('tagId') ?? undefined,
+      tagIds: asTagIds(searchParams.getAll('tagIds')),
       sortBy: asSortBy(searchParams.get('sortBy')),
       sortDirection: asDirection(searchParams.get('sortDirection')),
       page: clampPage(Number(searchParams.get('page') ?? '1')),
@@ -68,14 +89,18 @@ export function useTaskFilters(): {
     [searchParams],
   );
 
+  const viewMode = useMemo(() => asViewMode(searchParams.get('view')), [searchParams]);
+
   const setFilter = useCallback(
     <K extends keyof TaskFilters>(key: K, value: TaskFilters[K] | undefined) => {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
-          if (value === undefined || value === null || value === '') {
-            next.delete(key);
-          } else {
+          next.delete(key);
+          if (Array.isArray(value)) {
+            // Empty arrays encode as "no filter" — skip writing any param.
+            value.forEach((v) => next.append(key, String(v)));
+          } else if (value !== undefined && value !== null && value !== '') {
             next.set(key, String(value));
           }
           // Any filter change (except pagination) resets to page 1.
@@ -88,9 +113,43 @@ export function useTaskFilters(): {
     [setSearchParams],
   );
 
+  const setViewMode = useCallback(
+    (mode: TaskViewMode) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (mode === DEFAULT_VIEW_MODE) {
+            next.delete('view');
+          } else {
+            next.set('view', mode);
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   const resetFilters = useCallback(() => {
-    setSearchParams(new URLSearchParams(), { replace: true });
+    setSearchParams(
+      (prev) => {
+        // Preserve view preference when clearing filters.
+        const next = new URLSearchParams();
+        const view = prev.get('view');
+        if (view) next.set('view', view);
+        return next;
+      },
+      { replace: true },
+    );
   }, [setSearchParams]);
 
-  return { filters, setFilter, resetFilters, pageSizeOptions: PAGE_SIZE_OPTIONS };
+  return {
+    filters,
+    setFilter,
+    resetFilters,
+    pageSizeOptions: PAGE_SIZE_OPTIONS,
+    viewMode,
+    setViewMode,
+  };
 }

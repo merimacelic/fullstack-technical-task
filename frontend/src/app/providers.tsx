@@ -18,7 +18,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <AuthStorageSync />
         {children}
-        <Toaster position="top-right" richColors closeButton />
+        <Toaster position="top-right" richColors closeButton expand />
       </ThemeProvider>
     </Provider>
   );

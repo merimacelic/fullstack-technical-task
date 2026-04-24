@@ -23,7 +23,7 @@ public class GetTasksQueryHandlerTests
 
         var handler = new GetTasksQueryHandler(db, FakeCurrentUser.WithId(Owner));
         var result = await handler.Handle(
-            new GetTasksQuery(Status: "Completed"),
+            new GetTasksQuery(Statuses: ["Completed"]),
             CancellationToken.None);
 
         result.IsError.ShouldBeFalse();
@@ -33,13 +33,36 @@ public class GetTasksQueryHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Should_ReturnTasksMatchingAnyOfSelectedStatuses()
+    {
+        using var db = InMemoryApplicationDbContext.CreateNew();
+        var pending = TestTaskFactory.New(Owner, "a", nowUtc: FixedNow);
+        var inProgress = TestTaskFactory.New(Owner, "b", nowUtc: FixedNow.AddMinutes(1));
+        inProgress.ChangeStatus(TaskItemStatus.InProgress, FixedNow.AddMinutes(1));
+        var done = TestTaskFactory.New(Owner, "c", nowUtc: FixedNow.AddMinutes(2));
+        done.Complete(FixedNow.AddMinutes(2));
+        db.Tasks.Add(pending);
+        db.Tasks.Add(inProgress);
+        db.Tasks.Add(done);
+        await db.SaveChangesAsync(CancellationToken.None);
+
+        var handler = new GetTasksQueryHandler(db, FakeCurrentUser.WithId(Owner));
+        var result = await handler.Handle(
+            new GetTasksQuery(Statuses: ["Pending", "Completed"]),
+            CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Items.Select(t => t.Title).ShouldBe(["a", "c"], ignoreOrder: true);
+    }
+
+    [Fact]
     public async Task Handle_Should_FailFast_OnUnknownStatus()
     {
         using var db = InMemoryApplicationDbContext.CreateNew();
         var handler = new GetTasksQueryHandler(db, FakeCurrentUser.WithId(Owner));
 
         var result = await handler.Handle(
-            new GetTasksQuery(Status: "nope"),
+            new GetTasksQuery(Statuses: ["Pending", "nope"]),
             CancellationToken.None);
 
         result.IsError.ShouldBeTrue();

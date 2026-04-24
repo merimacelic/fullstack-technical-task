@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
@@ -14,7 +15,7 @@ import {
 } from '@/shared/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 import { cn } from '@/shared/lib/cn';
-import { parseProblem } from '@/shared/lib/problemDetails';
+import { parseProblem, problemDetail, problemTitle } from '@/shared/lib/problemDetails';
 import { useCreateTagMutation, useGetTagsQuery } from '../api';
 
 interface TagPickerProps {
@@ -27,19 +28,22 @@ interface TagPickerProps {
 }
 
 export function TagPicker({ value, onChange, id, disabled, ...aria }: TagPickerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const { data: tags = [], isLoading } = useGetTagsQuery();
   const [createTag, { isLoading: creating }] = useCreateTagMutation();
 
-  const selectedTags = tags.filter((t) => value.includes(t.id));
-  const filtered = tags.filter((t) => t.name.toLowerCase().includes(search.trim().toLowerCase()));
+  const selectedTags = tags.filter((tag) => value.includes(tag.id));
+  const filtered = tags.filter((tag) =>
+    tag.name.toLowerCase().includes(search.trim().toLowerCase()),
+  );
   const canCreate =
     search.trim().length > 0 &&
-    !tags.some((t) => t.name.toLowerCase() === search.trim().toLowerCase());
+    !tags.some((tag) => tag.name.toLowerCase() === search.trim().toLowerCase());
 
   function toggle(tagId: string) {
-    onChange(value.includes(tagId) ? value.filter((id) => id !== tagId) : [...value, tagId]);
+    onChange(value.includes(tagId) ? value.filter((x) => x !== tagId) : [...value, tagId]);
   }
 
   async function handleCreate() {
@@ -51,7 +55,7 @@ export function TagPicker({ value, onChange, id, disabled, ...aria }: TagPickerP
       setSearch('');
     } catch (err) {
       const parsed = parseProblem(err as never);
-      toast.error(parsed.title, { description: parsed.detail });
+      toast.error(t(problemTitle(parsed)), { description: t(problemDetail(parsed)) });
     }
   }
 
@@ -71,20 +75,22 @@ export function TagPicker({ value, onChange, id, disabled, ...aria }: TagPickerP
             disabled={disabled}
             className={cn('w-full justify-between', value.length === 0 && 'text-muted-foreground')}
           >
-            {value.length === 0 ? 'Attach tags…' : `${value.length} tag${value.length === 1 ? '' : 's'} selected`}
+            {value.length === 0
+              ? t('tags.picker.empty')
+              : t('tags.picker.selected', { count: value.length })}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[min(380px,calc(100vw-2rem))] p-0" align="start">
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder="Search or create tag…"
+              placeholder={t('tags.picker.searchPlaceholder')}
               value={search}
               onValueChange={setSearch}
             />
             <CommandList>
               {!isLoading && filtered.length === 0 && !canCreate && (
-                <CommandEmpty>No tags found.</CommandEmpty>
+                <CommandEmpty>{t('tags.picker.emptyText')}</CommandEmpty>
               )}
               <CommandGroup>
                 {filtered.map((tag) => {
@@ -101,10 +107,11 @@ export function TagPicker({ value, onChange, id, disabled, ...aria }: TagPickerP
                 })}
               </CommandGroup>
               {canCreate && (
-                <CommandGroup heading="Create">
+                <CommandGroup heading={t('tags.picker.createHeading')}>
                   <CommandItem value={`__create__${search}`} onSelect={() => void handleCreate()}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Create tag “{search.trim()}”{creating && '…'}
+                    {t('tags.picker.createItem', { name: search.trim() })}
+                    {creating && t('tags.picker.creating')}
                   </CommandItem>
                 </CommandGroup>
               )}
@@ -122,7 +129,7 @@ export function TagPicker({ value, onChange, id, disabled, ...aria }: TagPickerP
                 type="button"
                 onClick={() => toggle(tag.id)}
                 className="rounded-full outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={`Remove tag ${tag.name}`}
+                aria-label={t('tags.picker.removeAria', { name: tag.name })}
               >
                 <X className="h-3 w-3" />
               </button>

@@ -14,10 +14,16 @@ namespace TaskManagement.Application.Tasks.Commands.UpdateTask;
 /// <c>null</c> leaves existing tags untouched; an empty array clears all tags; a non-empty
 /// array replaces the tag set. Every id must belong to the caller. Capped at 50 per task.
 /// </param>
+/// <param name="Status">
+/// Optional target status. <c>null</c> leaves the current status untouched. When provided,
+/// the task is transitioned via the same domain rules as the dedicated /status endpoint —
+/// <c>CompletedAtUtc</c> is reset on any move off <c>Completed</c>.
+/// </param>
 public sealed record UpdateTaskCommand(
     Guid Id,
     string Title,
     string? Description,
     string Priority,
     DateTime? DueDateUtc,
-    IReadOnlyList<Guid>? TagIds = null) : IRequest<ErrorOr<TaskResponse>>;
+    IReadOnlyList<Guid>? TagIds = null,
+    string? Status = null) : IRequest<ErrorOr<TaskResponse>>;

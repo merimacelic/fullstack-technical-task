@@ -15,6 +15,11 @@ export type TaskSortBy =
 
 export type SortDirection = 'Ascending' | 'Descending';
 
+export type TaskViewMode = 'list' | 'grid' | 'table';
+
+export const TASK_VIEW_MODES: readonly TaskViewMode[] = ['list', 'grid', 'table'];
+export const DEFAULT_VIEW_MODE: TaskViewMode = 'list';
+
 export const TASK_STATUSES: readonly TaskStatus[] = ['Pending', 'InProgress', 'Completed'];
 export const TASK_PRIORITIES: readonly TaskPriority[] = ['Low', 'Medium', 'High', 'Critical'];
 export const TASK_SORT_FIELDS: readonly TaskSortBy[] = [
@@ -51,10 +56,10 @@ export interface PagedResult<T> {
 }
 
 export interface TaskFilters {
-  status?: TaskStatus;
-  priority?: TaskPriority;
+  statuses?: TaskStatus[];
+  priorities?: TaskPriority[];
   search?: string;
-  tagId?: string;
+  tagIds?: string[];
   sortBy: TaskSortBy;
   sortDirection: SortDirection;
   page: number;
@@ -62,7 +67,7 @@ export interface TaskFilters {
 }
 
 export const DEFAULT_FILTERS: TaskFilters = {
-  sortBy: 'CreatedAt',
+  sortBy: 'Order',
   sortDirection: 'Descending',
   page: 1,
   pageSize: 20,

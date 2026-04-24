@@ -165,6 +165,20 @@ public sealed class TaskItem : AggregateRoot<TaskId>
         return Result.Success;
     }
 
+    public ErrorOr<Success> ChangePriority(TaskPriority priority, DateTime nowUtc)
+    {
+        ArgumentNullException.ThrowIfNull(priority);
+
+        if (priority == Priority)
+        {
+            return Result.Success;
+        }
+
+        Priority = priority;
+        UpdatedAtUtc = nowUtc;
+        return Result.Success;
+    }
+
     public ErrorOr<Success> ChangeStatus(TaskItemStatus status, DateTime nowUtc)
     {
         ArgumentNullException.ThrowIfNull(status);

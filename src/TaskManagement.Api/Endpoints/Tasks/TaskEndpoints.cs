@@ -2,6 +2,8 @@ using Mediator;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagement.Api.Infrastructure;
+using TaskManagement.Application.Tasks.Commands.ChangeTaskPriority;
+using TaskManagement.Application.Tasks.Commands.ChangeTaskStatus;
 using TaskManagement.Application.Tasks.Commands.CompleteTask;
 using TaskManagement.Application.Tasks.Commands.CreateTask;
 using TaskManagement.Application.Tasks.Commands.DeleteTask;
@@ -55,6 +57,14 @@ public sealed class TaskEndpoints : IEndpoint
             .WithName("ReopenTask")
             .WithSummary("Reopen a completed task back to Pending.");
 
+        group.MapPatch("/{id:guid}/status", ChangeStatus)
+            .WithName("ChangeTaskStatus")
+            .WithSummary("Transition a task to a chosen status (Pending, InProgress, or Completed).");
+
+        group.MapPatch("/{id:guid}/priority", ChangePriority)
+            .WithName("ChangeTaskPriority")
+            .WithSummary("Change a task's priority (Low, Medium, High, or Critical).");
+
         group.MapPatch("/{id:guid}/reorder", ReorderTask)
             .WithName("ReorderTask")
             .WithSummary("Move a task between two neighbours (drag-and-drop).");
@@ -97,7 +107,14 @@ public sealed class TaskEndpoints : IEndpoint
         HttpContext http,
         CancellationToken cancellationToken)
     {
-        var command = new UpdateTaskCommand(id, body.Title, body.Description, body.Priority, body.DueDateUtc, body.TagIds);
+        var command = new UpdateTaskCommand(
+            id,
+            body.Title,
+            body.Description,
+            body.Priority,
+            body.DueDateUtc,
+            body.TagIds,
+            body.Status);
         var result = await sender.Send(command, cancellationToken);
         return result.ToOk(http);
     }
@@ -144,6 +161,28 @@ public sealed class TaskEndpoints : IEndpoint
         return result.ToOk(http);
     }
 
+    private static async Task<IResult> ChangeStatus(
+        Guid id,
+        ChangeTaskStatusBody body,
+        ISender sender,
+        HttpContext http,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new ChangeTaskStatusCommand(id, body.Status), cancellationToken);
+        return result.ToOk(http);
+    }
+
+    private static async Task<IResult> ChangePriority(
+        Guid id,
+        ChangeTaskPriorityBody body,
+        ISender sender,
+        HttpContext http,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new ChangeTaskPriorityCommand(id, body.Priority), cancellationToken);
+        return result.ToOk(http);
+    }
+
     /// <summary>Request body for <c>PUT /api/tasks/{id}</c>.</summary>
     /// <param name="Title">Required, 1–200 characters.</param>
     /// <param name="Description">Optional, up to 2000 characters.</param>
@@ -153,15 +192,28 @@ public sealed class TaskEndpoints : IEndpoint
     /// <c>null</c> leaves existing tags untouched; an empty array clears all tags; a non-empty
     /// array replaces the tag set. Every id must belong to the caller. Capped at 50 per task.
     /// </param>
+    /// <param name="Status">
+    /// Optional target status. <c>null</c> leaves the current status untouched. Allowed values:
+    /// <c>Pending</c>, <c>InProgress</c>, <c>Completed</c>.
+    /// </param>
     public sealed record UpdateTaskBody(
         string Title,
         string? Description,
         string Priority,
         DateTime? DueDateUtc,
-        IReadOnlyList<Guid>? TagIds = null);
+        IReadOnlyList<Guid>? TagIds = null,
+        string? Status = null);
 
     /// <summary>Request body for <c>PATCH /api/tasks/{id}/reorder</c> (drag-and-drop).</summary>
     /// <param name="PreviousTaskId">Task to land above the moved one, or <c>null</c> for top of list.</param>
     /// <param name="NextTaskId">Task to land below the moved one, or <c>null</c> for bottom of list.</param>
     public sealed record ReorderTaskBody(Guid? PreviousTaskId, Guid? NextTaskId);
+
+    /// <summary>Request body for <c>PATCH /api/tasks/{id}/status</c>.</summary>
+    /// <param name="Status">Target status name: <c>Pending</c>, <c>InProgress</c>, or <c>Completed</c>.</param>
+    public sealed record ChangeTaskStatusBody(string Status);
+
+    /// <summary>Request body for <c>PATCH /api/tasks/{id}/priority</c>.</summary>
+    /// <param name="Priority">Target priority name: <c>Low</c>, <c>Medium</c>, <c>High</c>, or <c>Critical</c>.</param>
+    public sealed record ChangeTaskPriorityBody(string Priority);
 }

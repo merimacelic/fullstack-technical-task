@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowDownAZ, ArrowDownUp, Filter, Search, SlidersHorizontal } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -12,24 +13,22 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/ui/sheet';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { useGetTagsQuery } from '@/features/tags/api';
 import { useTaskFilters } from '../hooks/useTaskFilters';
 import { TASK_PRIORITIES, TASK_STATUSES, type TaskPriority, type TaskStatus } from '../types';
+import { MultiFilterSelect, type MultiFilterOption } from './MultiFilterSelect';
 
-const ALL_VALUE = '__all__';
+const SORT_KEYS = ['Order', 'Title', 'CreatedAt', 'UpdatedAt', 'DueDate', 'Priority'] as const;
 
-const SORT_LABELS: Record<string, string> = {
-  CreatedAt: 'Created',
-  UpdatedAt: 'Updated',
-  DueDate: 'Due date',
-  Priority: 'Priority',
-  Title: 'Title',
-  Order: 'Manual order',
-};
+interface TaskFiltersProps {
+  actions?: React.ReactNode;
+}
 
-export function TaskFilters() {
-  const { filters, setFilter, resetFilters } = useTaskFilters();
+export function TaskFilters({ actions }: TaskFiltersProps) {
+  const { t } = useTranslation();
+  const { filters, setFilter } = useTaskFilters();
   const { data: tags } = useGetTagsQuery();
 
   const [searchDraft, setSearchDraft] = useState(filters.search ?? '');
@@ -43,94 +42,111 @@ export function TaskFilters() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, setFilter]);
 
-  // Keep the local draft in sync when the user clears via resetFilters.
   useEffect(() => {
     setSearchDraft(filters.search ?? '');
   }, [filters.search]);
 
-  const hasActiveFilters = Boolean(
-    filters.status ?? filters.priority ?? filters.search ?? filters.tagId,
+  const searchInput = (
+    <div className="relative w-full md:flex-1">
+      <Search
+        className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden
+      />
+      <Input
+        type="search"
+        placeholder={t('tasks.filters.search')}
+        value={searchDraft}
+        onChange={(e) => setSearchDraft(e.target.value)}
+        aria-label={t('tasks.filters.searchAria')}
+        className="w-full pl-8"
+      />
+    </div>
   );
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[180px]">
-          <Search
-            className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            type="search"
-            placeholder="Search title and description…"
-            value={searchDraft}
-            onChange={(e) => setSearchDraft(e.target.value)}
-            aria-label="Search tasks"
-            className="pl-8"
-          />
+      <div className="hidden flex-wrap items-center gap-2 md:flex">
+        {searchInput}
+
+        <VerticalSeparator />
+
+        <GroupIcon icon={Filter} label={t('tasks.filters.filterBy')} />
+        <StatusSelect value={filters.statuses} onChange={(v) => setFilter('statuses', v)} />
+        <PrioritySelect
+          value={filters.priorities}
+          onChange={(v) => setFilter('priorities', v)}
+        />
+        <TagSelect
+          value={filters.tagIds}
+          onChange={(v) => setFilter('tagIds', v)}
+          tags={tags ?? []}
+        />
+
+        <VerticalSeparator />
+
+        <GroupIcon icon={ArrowDownUp} label={t('tasks.filters.sortBy')} />
+        <SortControls />
+
+        {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
+      </div>
+
+      <div className="flex flex-col gap-2 md:hidden">
+        {searchInput}
+        <div className="flex items-center gap-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm">
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                {t('tasks.filters.mobileButton')}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>{t('tasks.filters.mobileButton')}</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4 flex flex-col gap-4">
+                <Field label={t('tasks.filters.placeholders.status')}>
+                  <StatusSelect
+                    value={filters.statuses}
+                    onChange={(v) => setFilter('statuses', v)}
+                  />
+                </Field>
+                <Field label={t('tasks.filters.placeholders.priority')}>
+                  <PrioritySelect
+                    value={filters.priorities}
+                    onChange={(v) => setFilter('priorities', v)}
+                  />
+                </Field>
+                <Field label={t('tasks.filters.placeholders.tag')}>
+                  <TagSelect
+                    value={filters.tagIds}
+                    onChange={(v) => setFilter('tagIds', v)}
+                    tags={tags ?? []}
+                  />
+                </Field>
+                <Field label={t('tasks.filters.placeholders.sort')}>
+                  <SortControls />
+                </Field>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
         </div>
-
-        {/* Inline filter bar on md+ screens */}
-        <div className="hidden items-center gap-2 md:flex">
-          <StatusSelect value={filters.status} onChange={(v) => setFilter('status', v)} />
-          <PrioritySelect value={filters.priority} onChange={(v) => setFilter('priority', v)} />
-          <TagSelect
-            value={filters.tagId}
-            onChange={(v) => setFilter('tagId', v)}
-            tags={tags ?? []}
-          />
-          <Separator />
-          <SortControls />
-        </div>
-
-        {/* Collapsed panel on smaller screens */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="md:hidden" aria-label="Open filters">
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              Filters
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Filters</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4 flex flex-col gap-4">
-              <Field label="Status">
-                <StatusSelect value={filters.status} onChange={(v) => setFilter('status', v)} />
-              </Field>
-              <Field label="Priority">
-                <PrioritySelect value={filters.priority} onChange={(v) => setFilter('priority', v)} />
-              </Field>
-              <Field label="Tag">
-                <TagSelect
-                  value={filters.tagId}
-                  onChange={(v) => setFilter('tagId', v)}
-                  tags={tags ?? []}
-                />
-              </Field>
-              <Field label="Sort">
-                <SortControls />
-              </Field>
-            </div>
-          </SheetContent>
-        </Sheet>
-
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              resetFilters();
-              setSearchDraft('');
-            }}
-          >
-            <X className="mr-1 h-4 w-4" />
-            Clear
-          </Button>
-        )}
       </div>
     </div>
+  );
+}
+
+function GroupIcon({ icon: Icon, label }: { icon: typeof Filter; label: string }) {
+  return (
+    <span
+      className="inline-flex h-4 w-4 items-center justify-center text-muted-foreground"
+      aria-label={label}
+      title={label}
+    >
+      <Icon className="h-4 w-4" aria-hidden />
+    </span>
   );
 }
 
@@ -143,34 +159,31 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Separator() {
-  return <span className="h-5 w-px bg-border" aria-hidden />;
+function VerticalSeparator() {
+  return <span className="mx-1 hidden h-6 w-px bg-border md:inline-block" aria-hidden />;
 }
 
 function StatusSelect({
   value,
   onChange,
 }: {
-  value: TaskStatus | undefined;
-  onChange: (value: TaskStatus | undefined) => void;
+  value: TaskStatus[] | undefined;
+  onChange: (value: TaskStatus[] | undefined) => void;
 }) {
+  const { t } = useTranslation();
+  const options = useMemo<readonly MultiFilterOption<TaskStatus>[]>(
+    () => TASK_STATUSES.map((s) => ({ value: s, label: t(`tasks.status.${s}`) })),
+    [t],
+  );
   return (
-    <Select
-      value={value ?? ALL_VALUE}
-      onValueChange={(v) => onChange(v === ALL_VALUE ? undefined : (v as TaskStatus))}
-    >
-      <SelectTrigger className="w-[150px]" aria-label="Filter by status">
-        <SelectValue placeholder="Status" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL_VALUE}>All statuses</SelectItem>
-        {TASK_STATUSES.map((s) => (
-          <SelectItem key={s} value={s}>
-            {s === 'InProgress' ? 'In progress' : s}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <MultiFilterSelect
+      value={value}
+      onChange={onChange}
+      options={options}
+      placeholder={t('tasks.filters.placeholders.status')}
+      ariaLabel={t('tasks.filters.aria.statusFilter')}
+      clearAriaLabel={t('tasks.filters.aria.clearStatus')}
+    />
   );
 }
 
@@ -178,26 +191,23 @@ function PrioritySelect({
   value,
   onChange,
 }: {
-  value: TaskPriority | undefined;
-  onChange: (value: TaskPriority | undefined) => void;
+  value: TaskPriority[] | undefined;
+  onChange: (value: TaskPriority[] | undefined) => void;
 }) {
+  const { t } = useTranslation();
+  const options = useMemo<readonly MultiFilterOption<TaskPriority>[]>(
+    () => TASK_PRIORITIES.map((p) => ({ value: p, label: t(`tasks.priority.${p}`) })),
+    [t],
+  );
   return (
-    <Select
-      value={value ?? ALL_VALUE}
-      onValueChange={(v) => onChange(v === ALL_VALUE ? undefined : (v as TaskPriority))}
-    >
-      <SelectTrigger className="w-[150px]" aria-label="Filter by priority">
-        <SelectValue placeholder="Priority" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL_VALUE}>All priorities</SelectItem>
-        {TASK_PRIORITIES.map((p) => (
-          <SelectItem key={p} value={p}>
-            {p}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <MultiFilterSelect
+      value={value}
+      onChange={onChange}
+      options={options}
+      placeholder={t('tasks.filters.placeholders.priority')}
+      ariaLabel={t('tasks.filters.aria.priorityFilter')}
+      clearAriaLabel={t('tasks.filters.aria.clearPriority')}
+    />
   );
 }
 
@@ -206,59 +216,80 @@ function TagSelect({
   onChange,
   tags,
 }: {
-  value: string | undefined;
-  onChange: (value: string | undefined) => void;
+  value: string[] | undefined;
+  onChange: (value: string[] | undefined) => void;
   tags: readonly { id: string; name: string }[];
 }) {
+  const { t } = useTranslation();
+  // Tag lists can grow arbitrarily; enable in-popover search once there are
+  // enough to make scanning slow.
+  const options = useMemo<readonly MultiFilterOption<string>[]>(
+    () => tags.map((tag) => ({ value: tag.id, label: tag.name })),
+    [tags],
+  );
   return (
-    <Select
-      value={value ?? ALL_VALUE}
-      onValueChange={(v) => onChange(v === ALL_VALUE ? undefined : v)}
-    >
-      <SelectTrigger className="w-[150px]" aria-label="Filter by tag">
-        <SelectValue placeholder="Tag" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL_VALUE}>All tags</SelectItem>
-        {tags.map((tag) => (
-          <SelectItem key={tag.id} value={tag.id}>
-            {tag.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <MultiFilterSelect
+      value={value}
+      onChange={onChange}
+      options={options}
+      placeholder={t('tasks.filters.placeholders.tag')}
+      ariaLabel={t('tasks.filters.aria.tagFilter')}
+      clearAriaLabel={t('tasks.filters.aria.clearTag')}
+      searchable={options.length > 6}
+      searchPlaceholder={t('tasks.filters.tag.searchPlaceholder')}
+      emptyText={t('tasks.filters.tag.emptyText')}
+    />
   );
 }
 
 function SortControls() {
+  const { t } = useTranslation();
   const { filters, setFilter } = useTaskFilters();
+  const ascending = filters.sortDirection === 'Ascending';
+  // Manual order has a user-set direction implicit in the drag; a toggle here
+  // would just invert what they arranged by hand.
+  const directionDisabled = filters.sortBy === 'Order';
+  const directionLabel = ascending
+    ? t('tasks.filters.sort.directionAscending')
+    : t('tasks.filters.sort.directionDescending');
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <Select value={filters.sortBy} onValueChange={(v) => setFilter('sortBy', v as never)}>
-        <SelectTrigger className="w-[150px]" aria-label="Sort by">
+        <SelectTrigger className="w-[150px]" aria-label={t('tasks.filters.sortBy')}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {Object.entries(SORT_LABELS).map(([key, label]) => (
+          {SORT_KEYS.map((key) => (
             <SelectItem key={key} value={key}>
-              {label}
+              {t(`tasks.filters.sort.${key}`)}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <Button
-        variant="outline"
-        size="sm"
-        aria-label={`Sort direction: ${filters.sortDirection}`}
-        onClick={() =>
-          setFilter(
-            'sortDirection',
-            filters.sortDirection === 'Ascending' ? 'Descending' : 'Ascending',
-          )
-        }
-      >
-        {filters.sortDirection === 'Ascending' ? 'Asc ↑' : 'Desc ↓'}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 cursor-pointer"
+            disabled={directionDisabled}
+            aria-label={t('tasks.filters.aria.sortDirection', { direction: directionLabel })}
+            onClick={() => setFilter('sortDirection', ascending ? 'Descending' : 'Ascending')}
+          >
+            <ArrowDownAZ
+              className={`h-4 w-4 transition-transform ${ascending ? '' : 'rotate-180'}`}
+              aria-hidden
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          {directionDisabled
+            ? t('tasks.filters.sort.manual')
+            : ascending
+              ? t('tasks.filters.sort.ascending')
+              : t('tasks.filters.sort.descending')}
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 }

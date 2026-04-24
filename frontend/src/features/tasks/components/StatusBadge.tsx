@@ -1,11 +1,7 @@
+import { useTranslation } from 'react-i18next';
+
 import { cn } from '@/shared/lib/cn';
 import type { TaskStatus } from '../types';
-
-const LABELS: Record<TaskStatus, string> = {
-  Pending: 'Pending',
-  InProgress: 'In progress',
-  Completed: 'Completed',
-};
 
 const STYLES: Record<TaskStatus, string> = {
   Pending: 'bg-muted text-muted-foreground border-border',
@@ -14,16 +10,18 @@ const STYLES: Record<TaskStatus, string> = {
 };
 
 export function StatusBadge({ status, className }: { status: TaskStatus; className?: string }) {
+  const { t } = useTranslation();
+  const label = t(`tasks.status.${status}`);
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium',
+        'inline-flex shrink-0 items-center rounded-md border px-2 py-0.5 text-xs font-medium',
         STYLES[status],
         className,
       )}
-      aria-label={`Status: ${LABELS[status]}`}
+      aria-label={t('tasks.status.ariaLabel', { label })}
     >
-      {LABELS[status]}
+      {label}
     </span>
   );
 }

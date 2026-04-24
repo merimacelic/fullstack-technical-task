@@ -69,6 +69,19 @@ public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand
             task.ReplaceTags(request.TagIds.Select(t => new TagId(t)), _clock.UtcNow);
         }
 
+        // Apply any status transition through the domain's ChangeStatus so side
+        // effects (CompletedAtUtc reset, events) stay consistent with the dedicated
+        // /status endpoint. null means "leave the current status untouched".
+        if (!string.IsNullOrEmpty(request.Status))
+        {
+            var targetStatus = TaskItemStatus.FromName(request.Status);
+            var statusResult = task.ChangeStatus(targetStatus, _clock.UtcNow);
+            if (statusResult.IsError)
+            {
+                return statusResult.Errors;
+            }
+        }
+
         await _dbContext.SaveChangesAsync(cancellationToken);
         return task.ToResponse();
     }

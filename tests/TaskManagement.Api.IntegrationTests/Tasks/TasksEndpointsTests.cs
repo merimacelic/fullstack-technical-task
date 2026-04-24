@@ -91,7 +91,7 @@ public class TasksEndpointsTests : IntegrationTestBase
         (await ReadJsonAsync<TaskResponse>(completed)).Status.ShouldBe("Completed");
 
         // Filter by status
-        var completedList = await Client.GetAsync("/api/tasks?status=Completed");
+        var completedList = await Client.GetAsync("/api/tasks?statuses=Completed");
         completedList.StatusCode.ShouldBe(HttpStatusCode.OK);
         var page = await ReadJsonAsync<PagedResult<TaskResponse>>(completedList);
         page.Items.Count.ShouldBe(1);

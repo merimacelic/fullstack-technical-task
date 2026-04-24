@@ -7,6 +7,7 @@ export interface CreateTaskPayload {
   priority: string;
   dueDateUtc?: string | null;
   tagIds?: string[];
+  status?: string;
 }
 
 export interface UpdateTaskPayload {
@@ -16,14 +17,15 @@ export interface UpdateTaskPayload {
   priority: string;
   dueDateUtc?: string | null;
   tagIds?: string[] | null;
+  status?: string;
 }
 
 function buildQueryParams(filters: TaskFilters): URLSearchParams {
   const params = new URLSearchParams();
-  if (filters.status) params.set('Status', filters.status);
-  if (filters.priority) params.set('Priority', filters.priority);
+  filters.statuses?.forEach((s) => params.append('Statuses', s));
+  filters.priorities?.forEach((p) => params.append('Priorities', p));
+  filters.tagIds?.forEach((id) => params.append('TagIds', id));
   if (filters.search) params.set('Search', filters.search);
-  if (filters.tagId) params.set('TagId', filters.tagId);
   params.set('SortBy', filters.sortBy);
   params.set('SortDirection', filters.sortDirection);
   params.set('Page', String(filters.page));
@@ -83,25 +85,60 @@ export const tasksApi = api.injectEndpoints({
         { type: 'Tasks', id: 'LIST' },
       ],
     }),
+    changeTaskStatus: builder.mutation<TaskDto, { id: string; status: string }>({
+      query: ({ id, status }) => ({
+        url: `/api/tasks/${id}/status`,
+        method: 'PATCH',
+        body: { status },
+      }),
+      invalidatesTags: (_r, _e, arg) => [
+        { type: 'Task', id: arg.id },
+        { type: 'Tasks', id: 'LIST' },
+      ],
+    }),
+    changeTaskPriority: builder.mutation<TaskDto, { id: string; priority: string }>({
+      query: ({ id, priority }) => ({
+        url: `/api/tasks/${id}/priority`,
+        method: 'PATCH',
+        body: { priority },
+      }),
+      invalidatesTags: (_r, _e, arg) => [
+        { type: 'Task', id: arg.id },
+        { type: 'Tasks', id: 'LIST' },
+      ],
+    }),
     reorderTask: builder.mutation<
       TaskDto,
       {
         id: string;
-        previousTaskId: string | null;
-        nextTaskId: string | null;
+        // Visual neighbours after the move: the tasks immediately above / below
+        // the dropped card in the user's current view. The optimistic patch
+        // uses these directly (they index into the visually-ordered list).
+        visualPreviousId: string | null;
+        visualNextId: string | null;
         filters: TaskFilters;
       }
     >({
-      query: ({ id, previousTaskId, nextTaskId }) => ({
-        url: `/api/tasks/${id}/reorder`,
-        method: 'PATCH',
-        body: { previousTaskId, nextTaskId },
-      }),
+      query: ({ id, visualPreviousId, visualNextId, filters }) => {
+        // Backend contract (see OrderKeyService.BetweenAsync): previousTaskId
+        // must have a *lower* OrderKey than nextTaskId. In a descending view
+        // the visually-above task has the *higher* key, so swap to preserve
+        // the ascending-key semantics the service is built on.
+        const descending =
+          filters.sortBy === 'Order' && filters.sortDirection === 'Descending';
+        const previousTaskId = descending ? visualNextId : visualPreviousId;
+        const nextTaskId = descending ? visualPreviousId : visualNextId;
+        return {
+          url: `/api/tasks/${id}/reorder`,
+          method: 'PATCH',
+          body: { previousTaskId, nextTaskId },
+        };
+      },
       // Optimistic list patch: move the item locally so the user sees the
       // result instantly. The server returns the authoritative orderKey; we
       // invalidate on success to pull the rebalanced values if needed.
       async onQueryStarted(
-        { id, previousTaskId, nextTaskId, filters },
+        { id, visualPreviousId, visualNextId, filters },
         { dispatch, queryFulfilled },
       ) {
         const patch = dispatch(
@@ -112,11 +149,11 @@ export const tasksApi = api.injectEndpoints({
             if (!moving) return;
 
             let insertAt: number;
-            if (previousTaskId) {
-              const prevIdx = draft.items.findIndex((t) => t.id === previousTaskId);
+            if (visualPreviousId) {
+              const prevIdx = draft.items.findIndex((t) => t.id === visualPreviousId);
               insertAt = prevIdx >= 0 ? prevIdx + 1 : 0;
-            } else if (nextTaskId) {
-              const nextIdx = draft.items.findIndex((t) => t.id === nextTaskId);
+            } else if (visualNextId) {
+              const nextIdx = draft.items.findIndex((t) => t.id === visualNextId);
               insertAt = nextIdx >= 0 ? nextIdx : draft.items.length;
             } else {
               insertAt = 0;
@@ -137,11 +174,14 @@ export const tasksApi = api.injectEndpoints({
 
 export const {
   useGetTasksQuery,
+  useLazyGetTasksQuery,
   useGetTaskByIdQuery,
   useCreateTaskMutation,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
   useCompleteTaskMutation,
   useReopenTaskMutation,
+  useChangeTaskStatusMutation,
+  useChangeTaskPriorityMutation,
   useReorderTaskMutation,
 } = tasksApi;

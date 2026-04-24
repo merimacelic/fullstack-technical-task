@@ -1,4 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { useTaskFilters } from '../hooks/useTaskFilters';
@@ -20,6 +22,7 @@ export function Pagination({
   hasPreviousPage,
   hasNextPage,
 }: PaginationProps) {
+  const { t } = useTranslation();
   const { setFilter, pageSizeOptions } = useTaskFilters();
   if (totalCount === 0) return null;
 
@@ -28,20 +31,20 @@ export function Pagination({
 
   return (
     <nav
-      aria-label="Task list pagination"
+      aria-label={t('tasks.pagination.nav')}
       className="flex flex-wrap items-center justify-between gap-3 border-t pt-3"
     >
       <p className="text-xs text-muted-foreground" aria-live="polite">
-        Showing <strong>{start}</strong>–<strong>{end}</strong> of <strong>{totalCount}</strong>
+        {t('tasks.pagination.showing', { start, end, total: totalCount })}
       </p>
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="sr-only sm:not-sr-only">Items per page</span>
+          <span className="sr-only sm:not-sr-only">{t('tasks.pagination.itemsPerPage')}</span>
           <Select
             value={String(pageSize)}
             onValueChange={(v) => setFilter('pageSize', Number(v))}
           >
-            <SelectTrigger className="h-8 w-[72px]" aria-label="Items per page">
+            <SelectTrigger className="h-8 w-[72px]" aria-label={t('tasks.pagination.itemsPerPage')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -60,10 +63,10 @@ export function Pagination({
           onClick={() => setFilter('page', page - 1)}
         >
           <ChevronLeft className="h-4 w-4" />
-          <span className="sr-only sm:not-sr-only sm:ml-1">Previous</span>
+          <span className="sr-only sm:not-sr-only sm:ml-1">{t('tasks.pagination.previous')}</span>
         </Button>
         <span className="text-xs text-muted-foreground">
-          Page {page} of {totalPages}
+          {t('tasks.pagination.pageOf', { page, totalPages })}
         </span>
         <Button
           variant="outline"
@@ -71,7 +74,7 @@ export function Pagination({
           disabled={!hasNextPage}
           onClick={() => setFilter('page', page + 1)}
         >
-          <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
+          <span className="sr-only sm:not-sr-only sm:mr-1">{t('tasks.pagination.next')}</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

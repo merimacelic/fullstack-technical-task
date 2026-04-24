@@ -12,9 +12,14 @@ namespace TaskManagement.Application.Tasks.Commands.CreateTask;
 /// <param name="TagIds">
 /// Optional ids of tags to attach. Every id must belong to the caller. Capped at 50 per task.
 /// </param>
+/// <param name="Status">
+/// Optional initial status. Defaults to <c>Pending</c> when omitted. Allowed values:
+/// <c>Pending</c>, <c>InProgress</c>, <c>Completed</c>.
+/// </param>
 public sealed record CreateTaskCommand(
     string Title,
     string? Description,
     string Priority,
     DateTime? DueDateUtc,
-    IReadOnlyList<Guid>? TagIds = null) : IRequest<ErrorOr<TaskResponse>>;
+    IReadOnlyList<Guid>? TagIds = null,
+    string? Status = null) : IRequest<ErrorOr<TaskResponse>>;

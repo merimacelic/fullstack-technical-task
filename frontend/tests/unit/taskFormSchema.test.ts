@@ -7,10 +7,20 @@ describe('taskFormSchema', () => {
       title: 'Ship it',
       description: 'Hooray',
       priority: 'High',
+      status: 'Pending',
       dueDate: '2099-01-01',
       tagIds: [],
     });
     expect(result.success).toBe(true);
+  });
+
+  it('rejects an unknown status', () => {
+    const result = taskFormSchema.safeParse({
+      title: 'x',
+      priority: 'Low',
+      status: 'Archived',
+    });
+    expect(result.success).toBe(false);
   });
 
   it('rejects an empty title', () => {

@@ -68,6 +68,19 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
             task.ReplaceTags(request.TagIds.Select(t => new TagId(t)), _clock.UtcNow);
         }
 
+        // A non-default initial status (e.g. InProgress or Completed) is applied
+        // on top of the Pending default via the same transition method used by
+        // the /status endpoint, so CompletedAtUtc and domain events stay in sync.
+        if (!string.IsNullOrEmpty(request.Status))
+        {
+            var targetStatus = TaskItemStatus.FromName(request.Status);
+            var statusResult = task.ChangeStatus(targetStatus, _clock.UtcNow);
+            if (statusResult.IsError)
+            {
+                return statusResult.Errors;
+            }
+        }
+
         _dbContext.Tasks.Add(task);
         await _dbContext.SaveChangesAsync(cancellationToken);
 

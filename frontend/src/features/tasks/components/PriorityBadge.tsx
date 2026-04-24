@@ -1,4 +1,6 @@
 import { Flag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import { cn } from '@/shared/lib/cn';
 import type { TaskPriority } from '../types';
 
@@ -9,18 +11,26 @@ const STYLES: Record<TaskPriority, string> = {
   Critical: 'bg-(--color-priority-critical)/15 text-(--color-priority-critical) border-(--color-priority-critical)/40',
 };
 
-export function PriorityBadge({ priority, className }: { priority: TaskPriority; className?: string }) {
+export function PriorityBadge({
+  priority,
+  className,
+}: {
+  priority: TaskPriority;
+  className?: string;
+}) {
+  const { t } = useTranslation();
+  const label = t(`tasks.priority.${priority}`);
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium',
+        'inline-flex shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium',
         STYLES[priority],
         className,
       )}
-      aria-label={`Priority: ${priority}`}
+      aria-label={t('tasks.priority.ariaLabel', { label })}
     >
       <Flag className="h-3 w-3" aria-hidden />
-      {priority}
+      {label}
     </span>
   );
 }

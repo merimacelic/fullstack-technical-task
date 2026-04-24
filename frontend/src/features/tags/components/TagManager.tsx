@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, Pencil, Trash2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
@@ -17,7 +18,7 @@ import { Input } from '@/shared/ui/input';
 import { FormField } from '@/shared/ui/form-field';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ConfirmDialog } from '@/features/tasks/components/ConfirmDialog';
-import { parseProblem } from '@/shared/lib/problemDetails';
+import { parseProblem, problemDetail, problemTitle } from '@/shared/lib/problemDetails';
 
 import {
   useCreateTagMutation,
@@ -34,6 +35,7 @@ interface TagManagerProps {
 }
 
 export function TagManager({ open, onOpenChange }: TagManagerProps) {
+  const { t } = useTranslation();
   const { data: tags, isLoading } = useGetTagsQuery(undefined, { skip: !open });
   const [createTag, { isLoading: creating }] = useCreateTagMutation();
   const [renameTag, { isLoading: renaming }] = useRenameTagMutation();
@@ -46,22 +48,32 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
   const form = useForm<TagFormValues>({
     resolver: zodResolver(tagFormSchema),
     defaultValues: { name: '' },
-    mode: 'onBlur',
+    // Same reasoning as TaskForm: blur-mode validation inserts an error and
+    // shifts layout when focus leaves the input to click Close / ×, so the
+    // close affordance moves out from under the cursor before mouseup fires.
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
   });
+
+  // Clear residual state when the dialog is reopened — the form hook instance
+  // persists across open/close, so a prior error would otherwise show up again.
+  useEffect(() => {
+    if (open) form.reset({ name: '' });
+  }, [open, form]);
 
   async function onCreate(values: TagFormValues) {
     try {
       await createTag({ name: values.name }).unwrap();
-      toast.success('Tag created.');
+      toast.success(t('tags.manager.toast.created'));
       form.reset({ name: '' });
     } catch (err) {
       const parsed = parseProblem(err as never);
       if (parsed.status === 409) {
-        form.setError('name', { message: parsed.detail });
+        form.setError('name', { message: parsed.detail || t(parsed.detailKey) });
       } else if (parsed.fieldErrors?.['Name']?.[0]) {
         form.setError('name', { message: parsed.fieldErrors['Name'][0] });
       } else {
-        toast.error(parsed.title, { description: parsed.detail });
+        toast.error(t(problemTitle(parsed)), { description: t(problemDetail(parsed)) });
       }
     }
   }
@@ -74,11 +86,11 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
     }
     try {
       await renameTag({ id: tag.id, name }).unwrap();
-      toast.success('Tag renamed.');
+      toast.success(t('tags.manager.toast.renamed'));
       setEditingId(null);
     } catch (err) {
       const parsed = parseProblem(err as never);
-      toast.error(parsed.title, { description: parsed.detail });
+      toast.error(t(problemTitle(parsed)), { description: t(problemDetail(parsed)) });
     }
   }
 
@@ -86,11 +98,11 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
     if (!pendingDelete) return;
     try {
       await deleteTag(pendingDelete.id).unwrap();
-      toast.success('Tag deleted.');
+      toast.success(t('tags.manager.toast.deleted'));
       setPendingDelete(null);
     } catch (err) {
       const parsed = parseProblem(err as never);
-      toast.error(parsed.title, { description: parsed.detail });
+      toast.error(t(problemTitle(parsed)), { description: t(problemDetail(parsed)) });
     }
   }
 
@@ -99,8 +111,8 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tags</DialogTitle>
-            <DialogDescription>Create, rename, or remove tags. Tags are scoped to your account.</DialogDescription>
+            <DialogTitle>{t('tags.manager.title')}</DialogTitle>
+            <DialogDescription>{t('tags.manager.description')}</DialogDescription>
           </DialogHeader>
 
           <form
@@ -111,13 +123,13 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
             <div className="flex-1">
               <FormField
                 id="tag-name"
-                label="Add a tag"
+                label={t('tags.manager.addLabel')}
                 error={form.formState.errors.name?.message}
               >
                 {({ id, describedBy, invalid }) => (
                   <Input
                     id={id}
-                    placeholder="e.g. Home"
+                    placeholder={t('tags.manager.placeholder')}
                     aria-invalid={invalid}
                     aria-describedby={describedBy}
                     {...form.register('name')}
@@ -126,7 +138,7 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
               </FormField>
             </div>
             <Button type="submit" disabled={creating}>
-              {creating ? 'Adding…' : 'Add'}
+              {creating ? t('tags.manager.adding') : t('tags.manager.add')}
             </Button>
           </form>
 
@@ -149,7 +161,7 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
                           ref={(el) => el?.focus()}
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
-                          aria-label={`Rename tag ${tag.name}`}
+                          aria-label={t('tags.manager.aria.rename', { name: tag.name })}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -164,7 +176,7 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
                           size="icon"
                           onClick={() => void saveRename(tag)}
                           disabled={renaming}
-                          aria-label="Save"
+                          aria-label={t('tags.manager.aria.save')}
                         >
                           <Check className="h-4 w-4" />
                         </Button>
@@ -172,7 +184,7 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => setEditingId(null)}
-                          aria-label="Cancel rename"
+                          aria-label={t('tags.manager.aria.cancel')}
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -181,7 +193,7 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
                       <>
                         <span className="flex-1 truncate text-sm">{tag.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {tag.taskCount} task{tag.taskCount === 1 ? '' : 's'}
+                          {t('tags.manager.taskCount', { count: tag.taskCount })}
                         </span>
                         <Button
                           variant="ghost"
@@ -190,7 +202,7 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
                             setEditingId(tag.id);
                             setEditingName(tag.name);
                           }}
-                          aria-label={`Rename ${tag.name}`}
+                          aria-label={t('tags.manager.aria.renameOne', { name: tag.name })}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -198,7 +210,7 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => setPendingDelete(tag)}
-                          aria-label={`Delete ${tag.name}`}
+                          aria-label={t('tags.manager.aria.delete', { name: tag.name })}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -209,14 +221,14 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
               </ul>
             ) : (
               <p className="p-6 text-center text-sm text-muted-foreground">
-                No tags yet — add one above to get started.
+                {t('tags.manager.empty')}
               </p>
             )}
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Close
+              {t('tags.manager.close')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -225,15 +237,16 @@ export function TagManager({ open, onOpenChange }: TagManagerProps) {
       <ConfirmDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(v) => (v ? undefined : setPendingDelete(null))}
-        title="Delete tag?"
+        title={t('tags.manager.confirmDelete.title')}
         description={
           pendingDelete
-            ? `This will remove “${pendingDelete.name}” from ${pendingDelete.taskCount} task${
-                pendingDelete.taskCount === 1 ? '' : 's'
-              }. Tasks themselves aren't deleted.`
+            ? t('tags.manager.confirmDelete.description', {
+                name: pendingDelete.name,
+                count: pendingDelete.taskCount,
+              })
             : ''
         }
-        confirmLabel="Delete"
+        confirmLabel={t('tags.manager.confirmDelete.confirm')}
         destructive
         isLoading={deleting}
         onConfirm={confirmDelete}
