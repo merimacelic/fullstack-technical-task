@@ -65,6 +65,12 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IUserService, UserService>();
 
+        // Demo-data seeder; only actually invoked when Seeding:DemoData is true
+        // in configuration (Program.cs owns the gate). Registering unconditionally
+        // keeps the DI graph simple and means a unit test can resolve + run it
+        // against an in-memory provider without touching config.
+        services.AddScoped<DemoDataSeeder>();
+
         return services;
     }
 }

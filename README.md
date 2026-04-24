@@ -1,6 +1,17 @@
 # Task Management System
 
-Full-stack task manager built for the ICON Studios full-stack trial. .NET 8 Clean Architecture backend + React 19 SPA. JWT auth, drag-and-drop reordering, tags, full test pyramid, containerised end-to-end.
+Full-stack task manager built for the ICON Studios full-stack trial. .NET 8 Clean Architecture backend + React 19 SPA. JWT auth, drag-and-drop reordering, tags, full test pyramid, containerised end-to-end, deployed to Azure on the permanent free tier.
+
+---
+
+## Live demo
+
+Hosted on Azure Container Apps + Azure SQL Database (free offer). Pre-seeded with a demo user and a realistic dataset (~60 tasks, 15 tags, varied statuses / priorities / due dates).
+
+- **App**: _see the deployed URL in the submission email_
+- **Demo credentials**: `demo@icon.mt` / `Passw0rd!`
+
+First hit after idle wakes the API (~3–5 s) and SQL (~10–30 s). Subsequent requests are instant. Deployment infrastructure — Bicep + walkthrough — lives in [`deploy/azure/`](deploy/azure/AZURE.md).
 
 ---
 
@@ -334,14 +345,38 @@ Mapping each bullet from the "Bonus Points" list in `Full Stack Trial.pdf` to wh
 | Drag-and-drop sorting     | ✅             | Backend: `OrderKey` + `PATCH /api/tasks/{id}/reorder`. Frontend: `@dnd-kit` with keyboard support + optimistic cache patches (see ADR 0010) |
 | Authentication            | ✅             | JWT bearer + rotating refresh tokens (Identity) on the server; access-token-in-memory + localStorage-refresh + mutex reauth on the client (see ADR 0008) |
 | Containerisation          | ✅             | Both services multi-stage (`jammy-chiseled-extra` API, `node:24 → nginx:stable-alpine` SPA with runtime `env.js` injection). Full `docker compose up` brings up SQL + API + SPA |
+| Deployment readiness      | ✅             | Live on Azure (Container Apps + SQL DB Free Offer + Log Analytics) via Bicep in [`deploy/azure/`](deploy/azure/). GitHub Actions push images to GHCR on `main`; `deploy.yml` rolls new revisions. Demo data seeded on startup. |
 | Responsive UI             | ✅             | Tailwind breakpoints, mobile `<Sheet>` filter panel, hamburger account menu, theme toggle (light/dark/system) |
 | "Advanced functionality"  | ✅             | **Tags** (second aggregate + tag picker combobox + tag manager modal), **CQRS** via Mediator, **Clean Architecture / DDD**, per-user ownership returning 404 (not 403), rate limiting, security headers, RFC 7807 surfaced as toasts + inline field errors, Testcontainers, NetArchTest, CodeQL (C# + JS/TS) |
 
 ---
 
+## Deployment
+
+### Live (Azure, free tier)
+
+Deployment infrastructure is in [`deploy/azure/`](deploy/azure/). [`AZURE.md`](deploy/azure/AZURE.md) walks through the full flow from a fresh Azure account to a public URL.
+
+Key choices:
+
+- **Azure Container Apps** for the API and SPA — Consumption plan, scale-to-zero, covered by the monthly free grant (180K vCPU-s + 360K GiB-s + 2M req per subscription).
+- **Azure SQL Database Free Offer** — 100K vCore-seconds serverless GP + 32 GB storage, free forever on a subscription. Auto-pauses after 1 h idle; `freeLimitExhaustionBehavior: AutoPause` means billing never accrues past zero.
+- **Log Analytics** — 5 GB ingestion/month free, required wiring for Container Apps diagnostics.
+
+Everything is a single `main.bicep` + a `deploy.sh` wrapper. `.github/workflows/deploy.yml` picks up the same template on a successful CI run against `main` and rolls a new revision.
+
+### CI → registry
+
+`.github/workflows/ci.yml` builds both images on every push. On pushes to `main` (or tag refs) it additionally pushes to `ghcr.io/<owner>/<repo>/{api,frontend}` with tags `:latest`, `:<sha>`, and `:<tag>` where applicable. PRs build only — no push.
+
+### Demo seeding
+
+`Seeding__DemoData=true` triggers [`DemoDataSeeder`](src/TaskManagement.Infrastructure/Persistence/DemoDataSeeder.cs) after migrations. It creates the `demo@icon.mt` user (password `Passw0rd!`), 15 curated tags, and 60 tasks generated with [Bogus](https://github.com/bchavez/Bogus) using a fixed seed — statuses, priorities, due dates (some overdue, some upcoming), and 0–3 tags per task. Idempotent: won't double-seed on restart.
+
+---
+
 ## What's next (future iterations)
 
-- **Cloud deployment** — both Dockerfiles + the compose file are deployment-ready; add a container registry push + Azure App Service / Container Apps / AKS manifests
 - **HttpOnly-cookie refresh tokens** — backend sets the cookie on `/login`/`/register`/`/refresh`, SPA drops `tokenStorage.ts`. Flagged in ADR 0008; a coordinated change across both halves
 - **Role-based authorization** — hook already in place (`IdentityRole<Guid>` is in the context); add roles + `[Authorize(Roles = "Admin")]` when needed
 - **Email confirmation / password reset** — Identity token providers can be wired up; needs an SMTP sender

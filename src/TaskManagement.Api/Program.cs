@@ -273,6 +273,7 @@ try
     });
 
     await MigrateDatabaseIfConfiguredAsync(app);
+    await SeedDemoDataIfConfiguredAsync(app);
 
     await app.RunAsync();
 }
@@ -309,6 +310,21 @@ static async Task MigrateDatabaseIfConfiguredAsync(WebApplication app)
                 logger.LogWarning(ex, "Database migration attempt {Attempt} failed; retrying in {Delay}.", attempt, delay));
 
     await retry.ExecuteAsync(() => db.Database.MigrateAsync());
+}
+
+static async Task SeedDemoDataIfConfiguredAsync(WebApplication app)
+{
+    // Gated behind Seeding:DemoData so empty installs stay empty by default.
+    // Intended to be flipped on for the hosted demo + optionally local compose.
+    var seedDemo = app.Configuration.GetValue("Seeding:DemoData", defaultValue: false);
+    if (!seedDemo)
+    {
+        return;
+    }
+
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DemoDataSeeder>();
+    await seeder.SeedAsync();
 }
 
 // Enables WebApplicationFactory<Program> for integration tests.

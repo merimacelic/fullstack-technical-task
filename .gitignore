@@ -51,6 +51,7 @@ packages/
 appsettings.*.Local.json
 *.pfx
 secrets.json
+deploy/azure/deploy.env
 
 ## Claude Code local state
 .claude/

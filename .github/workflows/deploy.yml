@@ -1,0 +1,102 @@
+name: Deploy to Azure
+
+# Two triggers:
+#   - push to main: rolls a new revision of both Container Apps with the
+#     freshly pushed :latest images (images themselves are pushed by ci.yml,
+#     which must complete first — see the workflow_run dependency).
+#   - manual dispatch: lets you redeploy on demand without pushing code.
+#
+# The deploy itself is idempotent: main.bicep is declarative, and Container
+# Apps rolls a new revision when the image digest changes.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: Image tag to deploy (default 'latest')
+        required: false
+        default: latest
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    # Only run when the CI run that triggered us actually succeeded.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: azure-prod
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure resource group
+        run: |
+          az group create \
+            --name "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --location "${{ vars.AZURE_LOCATION }}" \
+            --only-show-errors \
+            --output none
+
+      - name: Compute image references
+        id: images
+        run: |
+          tag="${{ github.event.inputs.imageTag || 'latest' }}"
+          repo="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          echo "apiImage=ghcr.io/$repo/api:$tag" >> "$GITHUB_OUTPUT"
+          echo "spaImage=ghcr.io/$repo/frontend:$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy Bicep
+        uses: azure/arm-deploy@v2
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ vars.AZURE_RESOURCE_GROUP }}
+          template: deploy/azure/main.bicep
+          parameters: >-
+            projectName=${{ vars.PROJECT_NAME }}
+            location=${{ vars.AZURE_LOCATION }}
+            sqlAdminLogin=${{ secrets.SQL_ADMIN_LOGIN }}
+            sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
+            jwtSecret=${{ secrets.JWT_SECRET }}
+            apiImage=${{ steps.images.outputs.apiImage }}
+            spaImage=${{ steps.images.outputs.spaImage }}
+            seedDemoData=true
+          failOnStdErr: false
+
+      - name: Roll Container App revisions to force image pull
+        run: |
+          az containerapp revision copy \
+            --name ${{ vars.PROJECT_NAME }}-api \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --only-show-errors --output none
+          az containerapp revision copy \
+            --name ${{ vars.PROJECT_NAME }}-spa \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --only-show-errors --output none
+
+      - name: Print URLs
+        run: |
+          api=$(az containerapp show \
+            --name ${{ vars.PROJECT_NAME }}-api \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn -o tsv)
+          spa=$(az containerapp show \
+            --name ${{ vars.PROJECT_NAME }}-spa \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn -o tsv)
+          echo "API: https://$api"
+          echo "SPA: https://$spa"

@@ -7,12 +7,19 @@ on:
     branches: [ main ]
 
 permissions:
+  # Container registry write permission only granted when actually publishing
+  # (pushes to main / tags). PRs stay read-only.
   contents: read
+  packages: write
 
 env:
   DOTNET_NOLOGO: "true"
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  REGISTRY: ghcr.io
+  # Image names derived from the repo slug — lowercased because ghcr requires it.
+  API_IMAGE_NAME: ${{ github.repository }}/api
+  SPA_IMAGE_NAME: ${{ github.repository }}/frontend
 
 jobs:
   backend:
@@ -72,18 +79,41 @@ jobs:
 
       # Docker build exercises the production Dockerfile on every commit to catch
       # image regressions (missing files, analyzer errors on Linux, etc.) early.
-      # The `--load` flag is omitted because we don't push yet; flip to `--push`
-      # + registry login here when a container registry is wired up.
+      # On pushes to main (or a tag), we additionally push to GHCR so the Azure
+      # Bicep deployment can pull the image. PRs only build — they don't push.
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build API image
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute API image tags
+        id: api-tags
+        run: |
+          lower="${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}"
+          lower_lc="$(echo "$lower" | tr '[:upper:]' '[:lower:]')"
+          tags="$lower_lc:${{ github.sha }}"
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            tags="$tags,$lower_lc:latest"
+          fi
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            tag_name="${GITHUB_REF##refs/tags/}"
+            tags="$tags,$lower_lc:$tag_name"
+          fi
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+
+      - name: Build (and push on main/tags) API image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: src/TaskManagement.Api/Dockerfile
-          push: false
-          tags: taskmanagement-api:${{ github.sha }}
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
+          tags: ${{ steps.api-tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -136,12 +166,35 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build frontend image
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute SPA image tags
+        id: spa-tags
+        run: |
+          lower="ghcr.io/${{ github.repository }}/frontend"
+          lower_lc="$(echo "$lower" | tr '[:upper:]' '[:lower:]')"
+          tags="$lower_lc:${{ github.sha }}"
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            tags="$tags,$lower_lc:latest"
+          fi
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            tag_name="${GITHUB_REF##refs/tags/}"
+            tags="$tags,$lower_lc:$tag_name"
+          fi
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+
+      - name: Build (and push on main/tags) frontend image
         uses: docker/build-push-action@v6
         with:
           context: frontend
           file: frontend/Dockerfile
-          push: false
-          tags: taskmanagement-frontend:${{ github.sha }}
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
+          tags: ${{ steps.spa-tags.outputs.tags }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
