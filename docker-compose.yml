@@ -1,0 +1,67 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: taskmanagement-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD:-Your_Password123}"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - taskmanagement-mssql-data:/var/opt/mssql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b -o /dev/null",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: src/TaskManagement.Api/Dockerfile
+    container_name: taskmanagement-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      # Connection string uses the compose service name; docker DNS resolves "sqlserver".
+      ConnectionStrings__Database: "${CONNECTION_STRING:-Server=sqlserver,1433;Database=TaskManagement;User Id=sa;Password=${SA_PASSWORD:-Your_Password123};TrustServerCertificate=True;MultipleActiveResultSets=True;}"
+      Jwt__SecretKey: "${JWT_SECRET_KEY:-replace-me-with-a-strong-random-256-bit-secret-1234}"
+      Jwt__Issuer: "${JWT_ISSUER:-TaskManagement.Api}"
+      Jwt__Audience: "${JWT_AUDIENCE:-TaskManagement.Client}"
+      # Run EF migrations automatically so the container is self-sufficient.
+      Database__RunMigrationsOnStartup: "true"
+    ports:
+      - "8080:8080"
+    # Note: no container HEALTHCHECK — jammy-chiseled ships no shell or wget/curl.
+    # The HTTP /health and /health/ready endpoints remain for orchestrators
+    # (Kubernetes httpGet probes, load-balancer health checks).
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: taskmanagement-frontend
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      # Browser-side URL — the SPA runs in the user's browser, so the API
+      # host must be reachable from *outside* the compose network.
+      API_BASE_URL: "${FRONTEND_API_BASE_URL:-http://localhost:8080}"
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+volumes:
+  taskmanagement-mssql-data:
