@@ -16,6 +16,7 @@ import type {
 
 import { loggedOut } from '@/features/auth/slice';
 import type { RootState } from '@/app/store';
+import i18n from '@/i18n';
 import { config } from './config';
 import { newCorrelationId } from './correlationId';
 import { tokenStorage } from './tokenStorage';
@@ -31,6 +32,10 @@ const rawBaseQuery = fetchBaseQuery({
     if (!headers.has('X-Correlation-Id')) {
       headers.set('X-Correlation-Id', newCorrelationId());
     }
+    // Mirror the UI language onto every request so the BE's RequestLocalization
+    // middleware returns ProblemDetails text (validation errors, titles) in the
+    // user's chosen locale.
+    headers.set('Accept-Language', i18n.language || 'en');
     return headers;
   },
 });

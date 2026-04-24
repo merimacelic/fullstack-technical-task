@@ -1,6 +1,9 @@
+import { toast } from 'sonner';
+
 import { api } from '@/shared/lib/api';
 import type { AuthSession } from './types';
 import { tokenStorage } from '@/shared/lib/tokenStorage';
+import i18n from '@/i18n';
 import { credentialsReceived, loggedOut } from './slice';
 
 interface AuthResponseDto {
@@ -55,8 +58,25 @@ export const authApi = api.injectEndpoints({
         try {
           const session = (await queryFulfilled).data;
           dispatch(credentialsReceived(session));
-        } catch {
-          dispatch(loggedOut());
+        } catch (err) {
+          // Only tear down the session on an actual auth failure. 429 / 5xx /
+          // network hiccups leave the refresh token valid — the next request
+          // will retry refresh silently instead of dumping the user on /login.
+          // We still surface a toast so the user knows *something* is wrong
+          // with the server rather than staring at endless 401s in silence.
+          const status = (err as { error?: { status?: number | string } }).error?.status;
+          if (status === 401 || status === 403) {
+            dispatch(loggedOut());
+          } else if (
+            status === 429 ||
+            status === 'FETCH_ERROR' ||
+            status === 'TIMEOUT_ERROR' ||
+            (typeof status === 'number' && status >= 500)
+          ) {
+            toast.error(i18n.t('errors.refreshUnavailable.title'), {
+              description: i18n.t('errors.refreshUnavailable.detail'),
+            });
+          }
         }
       },
     }),

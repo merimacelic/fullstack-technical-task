@@ -1,0 +1,387 @@
+{
+  "common": {
+    "appName": "Task Management",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "save": "Save",
+    "working": "Working…",
+    "backToTasks": "Back to tasks",
+    "goToTasks": "Go to tasks",
+    "back": "Back",
+    "skipToMain": "Skip to main content",
+    "rootContainerMissing": "Root container not found — did the HTML template change?"
+  },
+  "header": {
+    "tooltip": {
+      "theme": "Theme",
+      "language": "Language",
+      "account": "Account"
+    },
+    "account": {
+      "menu": "Open account menu",
+      "signedInAs": "Signed in as",
+      "unknown": "unknown",
+      "signOut": "Sign out"
+    },
+    "theme": {
+      "toggle": "Toggle theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "toggle": "Change language",
+      "en": "English",
+      "mt": "Malti"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "description": "Sign in to manage your tasks.",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "No account?",
+      "createOne": "Create one"
+    },
+    "register": {
+      "title": "Create your account",
+      "description": "Start organising your tasks in seconds.",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "passwordHelp": "At least 8 characters with an uppercase letter, a lowercase letter, and a digit.",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password"
+    }
+  },
+  "tasks": {
+    "page": {
+      "title": "Tasks",
+      "subtitle": "Everything you're working on, in one place.",
+      "newTask": "New task",
+      "tagsButton": "Tags"
+    },
+    "empty": {
+      "title": "No tasks match your filters.",
+      "subtitle": "Create a new task or clear the filters to see more."
+    },
+    "errors": {
+      "loadFailed": "Couldn't load tasks."
+    },
+    "confirm": {
+      "delete": {
+        "title": "Delete task?",
+        "description": "Delete \"{{title}}\"? This cannot be undone."
+      }
+    },
+    "toast": {
+      "created": "Task created.",
+      "updated": "Task updated.",
+      "deleted": "Task deleted."
+    },
+    "form": {
+      "dialog": {
+        "newTitle": "New task",
+        "editTitle": "Edit task",
+        "newDesc": "Add a new task to your list. You can attach tags and set a priority.",
+        "editDesc": "Update the task details below."
+      },
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "status": "Status",
+        "priority": "Priority",
+        "dueDate": "Due date",
+        "tags": "Tags"
+      },
+      "placeholders": {
+        "status": "Select status",
+        "priority": "Select priority"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "saving": "Saving…",
+        "save": "Save changes",
+        "create": "Create task"
+      }
+    },
+    "details": {
+      "back": "Back",
+      "edit": "Edit",
+      "delete": "Delete",
+      "reopen": "Reopen",
+      "markComplete": "Mark complete",
+      "noDescription": "No description.",
+      "created": "Created",
+      "updated": "Updated",
+      "completed": "Completed",
+      "due": "Due {{when}}",
+      "notFound": {
+        "title": "Not found",
+        "description": "This task doesn't exist or you don't have access."
+      }
+    },
+    "card": {
+      "tooltip": {
+        "edit": "Edit",
+        "details": "Open details",
+        "delete": "Delete"
+      },
+      "aria": {
+        "edit": "Edit {{title}}",
+        "details": "Open details for {{title}}",
+        "delete": "Delete {{title}}"
+      }
+    },
+    "status": {
+      "Pending": "Pending",
+      "InProgress": "In progress",
+      "Completed": "Completed",
+      "ariaLabel": "Status: {{label}}",
+      "picker": {
+        "trigger": "Change status — currently {{status}}",
+        "menu": "Change status"
+      }
+    },
+    "priority": {
+      "Low": "Low",
+      "Medium": "Medium",
+      "High": "High",
+      "Critical": "Critical",
+      "ariaLabel": "Priority: {{label}}",
+      "picker": {
+        "trigger": "Change priority — currently {{priority}}",
+        "menu": "Change priority"
+      }
+    },
+    "filters": {
+      "search": "Search…",
+      "searchAria": "Search tasks",
+      "filterBy": "Filter by",
+      "sortBy": "Sort by",
+      "mobileButton": "Filters & sort",
+      "placeholders": {
+        "status": "Status",
+        "priority": "Priority",
+        "tag": "Tag",
+        "sort": "Sort"
+      },
+      "aria": {
+        "statusFilter": "Filter by status",
+        "priorityFilter": "Filter by priority",
+        "tagFilter": "Filter by tag",
+        "clearStatus": "Clear status filter",
+        "clearPriority": "Clear priority filter",
+        "clearTag": "Clear tag filter",
+        "sortDirection": "Sort direction: {{direction}}. Click to toggle."
+      },
+      "sort": {
+        "Order": "Manual order",
+        "Title": "Title",
+        "CreatedAt": "Created",
+        "UpdatedAt": "Updated",
+        "DueDate": "Due date",
+        "Priority": "Priority",
+        "ascending": "Ascending (A → Z)",
+        "descending": "Descending (Z → A)",
+        "manual": "Direction is set by manual drag order",
+        "directionAscending": "ascending",
+        "directionDescending": "descending"
+      },
+      "tag": {
+        "searchPlaceholder": "Search tags…",
+        "emptyText": "No tags match."
+      },
+      "multi": {
+        "searchPlaceholder": "Search…",
+        "empty": "No results.",
+        "selected_one": "{{count}} selected",
+        "selected_other": "{{count}} selected"
+      }
+    },
+    "pagination": {
+      "nav": "Task list pagination",
+      "showing": "Showing {{start}}–{{end}} of {{total}}",
+      "itemsPerPage": "Items per page",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {{page}} of {{totalPages}}"
+    },
+    "view": {
+      "list": "List view",
+      "grid": "Grid view",
+      "table": "Table view",
+      "toggle": "Task view mode"
+    },
+    "dnd": {
+      "pickedUp": "Picked up task {{title}}.",
+      "movingOver": "Moving task {{title}} over {{target}}.",
+      "noLongerOver": "Task {{title}} is no longer over a drop target.",
+      "droppedOver": "Dropped task {{title}} over {{target}}.",
+      "droppedBack": "Task {{title}} was dropped back to its original position.",
+      "cancelled": "Movement cancelled for task {{title}}.",
+      "instructions": "Press space or enter to pick up a task. Use the arrow keys to move it. Press space or enter again to drop. Press escape to cancel."
+    },
+    "table": {
+      "headers": {
+        "statusToggle": "Status toggle",
+        "title": "Title",
+        "status": "Status",
+        "priority": "Priority",
+        "due": "Due",
+        "tags": "Tags",
+        "actions": "Actions"
+      }
+    }
+  },
+  "tags": {
+    "manager": {
+      "title": "Tags",
+      "description": "Create, rename, or remove tags. Tags are scoped to your account.",
+      "addLabel": "Add a tag",
+      "placeholder": "e.g. Home",
+      "add": "Add",
+      "adding": "Adding…",
+      "empty": "No tags yet — add one above to get started.",
+      "close": "Close",
+      "toast": {
+        "created": "Tag created.",
+        "renamed": "Tag renamed.",
+        "deleted": "Tag deleted."
+      },
+      "confirmDelete": {
+        "title": "Delete tag?",
+        "description_one": "This will remove \"{{name}}\" from {{count}} task. Tasks themselves aren't deleted.",
+        "description_other": "This will remove \"{{name}}\" from {{count}} tasks. Tasks themselves aren't deleted.",
+        "confirm": "Delete"
+      },
+      "aria": {
+        "rename": "Rename tag {{name}}",
+        "renameOne": "Rename {{name}}",
+        "delete": "Delete {{name}}",
+        "save": "Save",
+        "cancel": "Cancel rename"
+      },
+      "taskCount_one": "{{count}} task",
+      "taskCount_other": "{{count}} tasks"
+    },
+    "picker": {
+      "empty": "Attach tags…",
+      "selected_one": "{{count}} tag selected",
+      "selected_other": "{{count}} tags selected",
+      "searchPlaceholder": "Search or create tag…",
+      "emptyText": "No tags found.",
+      "createHeading": "Create",
+      "createItem": "Create tag \"{{name}}\"",
+      "creating": "Creating…",
+      "removeAria": "Remove tag {{name}}"
+    }
+  },
+  "errors": {
+    "unknown": {
+      "title": "Unknown error",
+      "detail": "An unknown error occurred."
+    },
+    "generic": {
+      "title": "Error",
+      "detail": "An error occurred."
+    },
+    "network": {
+      "title": "Network error",
+      "detail": "Unable to reach the server. Check your connection and try again."
+    },
+    "rateLimit": {
+      "title": "Too many requests",
+      "detail": "Try again in a moment."
+    },
+    "server": {
+      "title": "Server error",
+      "detail": "Something went wrong on our end. Please try again."
+    },
+    "refreshUnavailable": {
+      "title": "Service temporarily unavailable",
+      "detail": "We couldn't refresh your session right now. Please try again in a moment."
+    },
+    "notFound": {
+      "title": "Not found",
+      "detail": "The resource you requested was not found."
+    },
+    "conflict": {
+      "title": "Conflict",
+      "detail": "The request conflicts with the current state."
+    },
+    "unauthorised": {
+      "title": "Unauthorised",
+      "detail": "Your session has expired. Please sign in again."
+    },
+    "forbidden": {
+      "title": "Forbidden",
+      "detail": "You are not allowed to perform this action."
+    },
+    "validation": {
+      "title": "Validation error",
+      "detail": "Please fix the errors below and try again."
+    },
+    "boundary": {
+      "title": "Something went wrong",
+      "detail": "An unexpected error occurred.",
+      "routeFallback": "Unexpected route error."
+    },
+    "notFoundPage": {
+      "code": "404",
+      "title": "Page not found",
+      "body": "The page you tried to reach doesn't exist. Head back to your tasks to continue."
+    }
+  },
+  "validation": {
+    "auth": {
+      "email": {
+        "required": "Email is required.",
+        "tooLong": "Email must be 256 characters or fewer.",
+        "invalid": "Enter a valid email address."
+      },
+      "password": {
+        "required": "Password is required.",
+        "tooShort": "Password must be at least 8 characters.",
+        "tooLong": "Password must be 128 characters or fewer.",
+        "upper": "Password must contain an uppercase letter.",
+        "lower": "Password must contain a lowercase letter.",
+        "digit": "Password must contain a digit."
+      }
+    },
+    "task": {
+      "title": {
+        "required": "Title is required.",
+        "tooLong": "Title must be 200 characters or fewer."
+      },
+      "description": {
+        "tooLong": "Description must be 2000 characters or fewer."
+      },
+      "priority": {
+        "required": "Select a priority."
+      },
+      "status": {
+        "required": "Select a status."
+      },
+      "dueDate": {
+        "past": "Due date cannot be in the past."
+      },
+      "tags": {
+        "max": "A task can have at most 50 tags."
+      }
+    },
+    "tag": {
+      "name": {
+        "required": "Tag name is required.",
+        "tooLong": "Tag name must be 50 characters or fewer."
+      }
+    }
+  }
+}

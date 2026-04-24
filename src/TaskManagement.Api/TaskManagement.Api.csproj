@@ -26,6 +26,7 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders" />
+    <PackageReference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>
 
   <ItemGroup>

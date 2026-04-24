@@ -1,6 +1,8 @@
 // Mirrors CreateTaskCommandValidator + UpdateTaskCommandValidator on the
 // backend. MaxTagsPerTask=50 is enforced server-side too (see CreateTask
 // command validator); we cap client-side so users get feedback before submit.
+//
+// Messages are i18n keys; FormField translates at render time.
 
 import { z } from 'zod';
 import { isPastDate } from '@/shared/lib/date';
@@ -13,23 +15,26 @@ export const taskFormSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(1, 'Title is required.')
-    .max(MAX_TITLE, `Title must be ${MAX_TITLE} characters or fewer.`),
+    .min(1, 'validation.task.title.required')
+    .max(MAX_TITLE, 'validation.task.title.tooLong'),
   description: z
     .string()
-    .max(MAX_DESCRIPTION, `Description must be ${MAX_DESCRIPTION} characters or fewer.`)
+    .max(MAX_DESCRIPTION, 'validation.task.description.tooLong')
     .optional()
     .or(z.literal('')),
   priority: z.enum(['Low', 'Medium', 'High', 'Critical'], {
-    errorMap: () => ({ message: 'Select a priority.' }),
+    errorMap: () => ({ message: 'validation.task.priority.required' }),
+  }),
+  status: z.enum(['Pending', 'InProgress', 'Completed'], {
+    errorMap: () => ({ message: 'validation.task.status.required' }),
   }),
   dueDate: z
     .string()
     .optional()
-    .refine((v) => !v || !isPastDate(v), 'Due date cannot be in the past.'),
+    .refine((v) => !v || !isPastDate(v), 'validation.task.dueDate.past'),
   tagIds: z
     .array(z.string().uuid())
-    .max(MAX_TAGS, `A task can have at most ${MAX_TAGS} tags.`)
+    .max(MAX_TAGS, 'validation.task.tags.max')
     .optional()
     .default([]),
 });

@@ -38,6 +38,10 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
+        // Identity is intentionally used only as a password hasher + user store —
+        // register/login handlers (UserService) never surface Identity's own error
+        // descriptions to the wire (they return a generic UserErrors.* to prevent
+        // enumeration), so no custom IdentityErrorDescriber is registered.
         services
             .AddIdentityCore<ApplicationUser>(options =>
             {

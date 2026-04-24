@@ -1,12 +1,15 @@
 import { Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
 import { TooltipProvider } from '@/shared/ui/tooltip';
 import { AppHeader } from './AppHeader';
 
 export function AppShell() {
+  const { t } = useTranslation();
   return (
     <TooltipProvider delayDuration={200}>
       <a href="#main-content" className="skip-link">
-        Skip to main content
+        {t('common.skipToMain')}
       </a>
       <div className="flex min-h-screen flex-col bg-background text-foreground">
         <AppHeader />

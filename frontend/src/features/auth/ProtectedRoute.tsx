@@ -5,7 +5,7 @@
 //   3. No token at all → redirect to /login carrying the current location so
 //      we can navigate back after a successful sign-in.
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
@@ -21,13 +21,20 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   const isBootstrapping = useAppSelector(selectIsBootstrapping);
   const [refresh] = useRefreshMutation();
 
+  // StrictMode runs this effect twice in Dev. Without the ref guard both
+  // passes POST /api/auth/refresh with the same old token — the second one
+  // trips the backend's refresh-token-reuse detector and revokes the whole
+  // family, killing the session we'd just bootstrapped.
+  const attempted = useRef(false);
+
   useEffect(() => {
-    if (isAuthenticated || !isBootstrapping) return;
+    if (isAuthenticated || !isBootstrapping || attempted.current) return;
     const token = tokenStorage.getRefreshToken();
     if (!token) {
       dispatch(bootstrapFinished());
       return;
     }
+    attempted.current = true;
     refresh({ refreshToken: token })
       .unwrap()
       .catch(() => {

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Auth / Users validator messages -->
+  <data name="Auth.Email.Required" xml:space="preserve"><value>Email is required.</value></data>
+  <data name="Auth.Email.Invalid" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="Auth.Email.TooLong" xml:space="preserve"><value>Email must be 256 characters or fewer.</value></data>
+  <data name="Auth.Password.Required" xml:space="preserve"><value>Password is required.</value></data>
+  <data name="Auth.Password.TooShort" xml:space="preserve"><value>Password must be at least 8 characters.</value></data>
+  <data name="Auth.Password.TooLong" xml:space="preserve"><value>Password must be 128 characters or fewer.</value></data>
+  <data name="Auth.Password.Upper" xml:space="preserve"><value>Password must contain an uppercase letter.</value></data>
+  <data name="Auth.Password.Lower" xml:space="preserve"><value>Password must contain a lowercase letter.</value></data>
+  <data name="Auth.Password.Digit" xml:space="preserve"><value>Password must contain a digit.</value></data>
+  <data name="Auth.RefreshToken.Required" xml:space="preserve"><value>Refresh token is required.</value></data>
+  <data name="Auth.RefreshToken.TooLong" xml:space="preserve"><value>Refresh token is too long.</value></data>
+
+  <!-- Task validator messages -->
+  <data name="Task.Id.Required" xml:space="preserve"><value>Task id is required.</value></data>
+  <data name="Task.Title.Required" xml:space="preserve"><value>Title is required.</value></data>
+  <data name="Task.Title.TooLong" xml:space="preserve"><value>Title must be 200 characters or fewer.</value></data>
+  <data name="Task.Description.TooLong" xml:space="preserve"><value>Description must be 2000 characters or fewer.</value></data>
+  <data name="Task.Priority.Required" xml:space="preserve"><value>Priority is required.</value></data>
+  <data name="Task.Priority.Invalid" xml:space="preserve"><value>Priority must be one of: Low, Medium, High, Critical.</value></data>
+  <data name="Task.Status.Invalid" xml:space="preserve"><value>Status must be one of: Pending, InProgress, Completed.</value></data>
+  <data name="Task.Tags.TooMany" xml:space="preserve"><value>A task can be associated with at most 50 tags.</value></data>
+  <data name="Task.Reorder.SelfPrev" xml:space="preserve"><value>A task cannot be its own previous neighbour.</value></data>
+  <data name="Task.Reorder.SelfNext" xml:space="preserve"><value>A task cannot be its own next neighbour.</value></data>
+  <data name="Task.Reorder.SameNeighbour" xml:space="preserve"><value>Previous and next neighbours must be different tasks.</value></data>
+
+  <!-- Tag validator messages -->
+  <data name="Tag.Id.Required" xml:space="preserve"><value>Tag id is required.</value></data>
+  <data name="Tag.Name.Required" xml:space="preserve"><value>Tag name is required.</value></data>
+  <data name="Tag.Name.TooLong" xml:space="preserve"><value>Tag name must be 50 characters or fewer.</value></data>
+
+  <!-- Domain error codes (TaskErrors). {0} is filled from Error.Metadata["args"]
+       by ErrorLocalizer so id/limit/name values survive localisation. -->
+  <data name="Task.NotFound" xml:space="preserve"><value>Task with id '{0}' was not found.</value></data>
+  <data name="Task.TitleRequired" xml:space="preserve"><value>Task title must not be empty.</value></data>
+  <data name="Task.OwnerRequired" xml:space="preserve"><value>Task owner is required.</value></data>
+  <data name="Task.TitleTooLong" xml:space="preserve"><value>Task title must not exceed {0} characters.</value></data>
+  <data name="Task.DescriptionTooLong" xml:space="preserve"><value>Task description must not exceed {0} characters.</value></data>
+  <data name="Task.DueDateInPast" xml:space="preserve"><value>Due date cannot be in the past.</value></data>
+  <data name="Task.AlreadyCompleted" xml:space="preserve"><value>Task is already completed.</value></data>
+  <data name="Task.NotCompleted" xml:space="preserve"><value>Task is not completed, cannot be reopened.</value></data>
+  <data name="Task.UnknownStatus" xml:space="preserve"><value>Unknown status '{0}'.</value></data>
+  <data name="Task.UnknownPriority" xml:space="preserve"><value>Unknown priority '{0}'.</value></data>
+
+  <!-- Domain error codes (UserErrors) -->
+  <data name="User.InvalidCredentials" xml:space="preserve"><value>Email or password is incorrect.</value></data>
+  <data name="User.EmailRequired" xml:space="preserve"><value>Email is required.</value></data>
+  <data name="User.PasswordRequired" xml:space="preserve"><value>Password is required.</value></data>
+  <data name="User.RegistrationFailed" xml:space="preserve"><value>Registration failed. Check the email and password, then try again.</value></data>
+  <data name="User.LockedOut" xml:space="preserve"><value>Account is locked due to repeated failed attempts.</value></data>
+  <data name="User.InvalidRefreshToken" xml:space="preserve"><value>Refresh token is invalid, expired, or revoked.</value></data>
+
+  <!-- Domain error codes (TagErrors). {0} is the tag id / name / comma-separated id list. -->
+  <data name="Tag.NotFound" xml:space="preserve"><value>Tag(s) not found: {0}.</value></data>
+  <data name="Tag.OwnerRequired" xml:space="preserve"><value>Tag owner is required.</value></data>
+  <data name="Tag.NameRequired" xml:space="preserve"><value>Tag name must not be empty.</value></data>
+  <data name="Tag.NameTooLong" xml:space="preserve"><value>Tag name must not exceed {0} characters.</value></data>
+  <data name="Tag.AlreadyExists" xml:space="preserve"><value>A tag named '{0}' already exists for this user.</value></data>
+</root>

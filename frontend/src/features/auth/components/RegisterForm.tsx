@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
@@ -14,6 +15,7 @@ import { useAppSelector } from '@/app/hooks';
 import { selectIsAuthenticated } from '../slice';
 
 export function RegisterForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [registerUser, { isLoading }] = useRegisterMutation();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -42,7 +44,7 @@ export function RegisterForm() {
         }
         return;
       }
-      toast.error(parsed.title, { description: parsed.detail });
+      toast.error(t(parsed.titleKey), { description: t(parsed.detailKey) });
     }
   }
 
@@ -50,7 +52,7 @@ export function RegisterForm() {
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
       <FormField
         id="email"
-        label="Email"
+        label={t('auth.fields.email')}
         required
         error={form.formState.errors.email?.message}
       >
@@ -68,9 +70,9 @@ export function RegisterForm() {
 
       <FormField
         id="password"
-        label="Password"
+        label={t('auth.fields.password')}
         required
-        description="At least 8 characters with an uppercase letter, a lowercase letter, and a digit."
+        description={t('auth.register.passwordHelp')}
         error={form.formState.errors.password?.message}
       >
         {({ id, describedBy, invalid }) => (
@@ -86,13 +88,13 @@ export function RegisterForm() {
       </FormField>
 
       <Button type="submit" disabled={isLoading} aria-busy={isLoading} className="mt-2">
-        {isLoading ? 'Creating account…' : 'Create account'}
+        {isLoading ? t('auth.register.submitting') : t('auth.register.submit')}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
+        {t('auth.register.haveAccount')}{' '}
         <Link to="/login" className="font-medium text-foreground underline-offset-4 hover:underline">
-          Sign in
+          {t('auth.register.signIn')}
         </Link>
       </p>
     </form>

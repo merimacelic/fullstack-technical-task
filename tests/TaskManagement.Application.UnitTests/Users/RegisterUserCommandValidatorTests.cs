@@ -1,10 +1,12 @@
+using TaskManagement.Application.Resources;
+using TaskManagement.Application.UnitTests.Common;
 using TaskManagement.Application.Users.Commands.RegisterUser;
 
 namespace TaskManagement.Application.UnitTests.Users;
 
 public class RegisterUserCommandValidatorTests
 {
-    private readonly RegisterUserCommandValidator _sut = new();
+    private readonly RegisterUserCommandValidator _sut = new(new FakeStringLocalizer<SharedResource>());
 
     [Theory]
     [InlineData("")]

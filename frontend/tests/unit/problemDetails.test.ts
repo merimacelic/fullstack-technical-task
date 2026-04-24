@@ -4,7 +4,10 @@ import { parseProblem } from '@/shared/lib/problemDetails';
 describe('parseProblem', () => {
   it('returns network-error fallback for FETCH_ERROR', () => {
     const result = parseProblem({ status: 'FETCH_ERROR', error: 'boom' } as never);
-    expect(result.title).toBe('Network error');
+    // parseProblem now returns i18n keys; literal text is translated at the call
+    // site via useTranslation. Assert on the stable key, not the English label.
+    expect(result.titleKey).toBe('errors.network.title');
+    expect(result.detailKey).toBe('errors.network.detail');
   });
 
   it('extracts ProblemDetails fields from a 404 response', () => {
@@ -18,8 +21,11 @@ describe('parseProblem', () => {
       },
     } as never);
     expect(result.status).toBe(404);
+    // Server-provided title/detail (already localised via Accept-Language) comes
+    // back verbatim; the keys are filled in as fallbacks.
     expect(result.title).toBe('Not found');
     expect(result.detail).toBe('Task not found.');
+    expect(result.titleKey).toBe('errors.notFound.title');
     expect(result.type).toBe('Task.NotFound');
   });
 
@@ -37,6 +43,7 @@ describe('parseProblem', () => {
 
   it('falls back for 429', () => {
     const result = parseProblem({ status: 429, data: {} } as never);
-    expect(result.title).toBe('Too many requests');
+    expect(result.titleKey).toBe('errors.rateLimit.title');
+    expect(result.detailKey).toBe('errors.rateLimit.detail');
   });
 });

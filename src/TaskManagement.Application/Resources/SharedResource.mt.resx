@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="Auth.Email.Required" xml:space="preserve"><value>L-email huwa meħtieġ.</value></data>
+  <data name="Auth.Email.Invalid" xml:space="preserve"><value>Daħħal indirizz tal-email validu.</value></data>
+  <data name="Auth.Email.TooLong" xml:space="preserve"><value>L-email irid ikun 256 karattri jew inqas.</value></data>
+  <data name="Auth.Password.Required" xml:space="preserve"><value>Il-password hija meħtieġa.</value></data>
+  <data name="Auth.Password.TooShort" xml:space="preserve"><value>Il-password trid tkun mill-inqas 8 karattri.</value></data>
+  <data name="Auth.Password.TooLong" xml:space="preserve"><value>Il-password trid tkun 128 karattri jew inqas.</value></data>
+  <data name="Auth.Password.Upper" xml:space="preserve"><value>Il-password trid tinkludi ittra kapitali.</value></data>
+  <data name="Auth.Password.Lower" xml:space="preserve"><value>Il-password trid tinkludi ittra żgħira.</value></data>
+  <data name="Auth.Password.Digit" xml:space="preserve"><value>Il-password trid tinkludi numru.</value></data>
+  <data name="Auth.RefreshToken.Required" xml:space="preserve"><value>It-token tal-aġġornament hija meħtieġa.</value></data>
+  <data name="Auth.RefreshToken.TooLong" xml:space="preserve"><value>It-token tal-aġġornament hija twila wisq.</value></data>
+
+  <data name="Task.Id.Required" xml:space="preserve"><value>L-ID tal-biċċa xogħol hija meħtieġa.</value></data>
+  <data name="Task.Title.Required" xml:space="preserve"><value>It-titlu huwa meħtieġ.</value></data>
+  <data name="Task.Title.TooLong" xml:space="preserve"><value>It-titlu irid ikun 200 karattri jew inqas.</value></data>
+  <data name="Task.Description.TooLong" xml:space="preserve"><value>Id-deskrizzjoni trid tkun 2000 karattri jew inqas.</value></data>
+  <data name="Task.Priority.Required" xml:space="preserve"><value>Il-prijorità hija meħtieġa.</value></data>
+  <data name="Task.Priority.Invalid" xml:space="preserve"><value>Il-prijorità trid tkun waħda minn: Low, Medium, High, Critical.</value></data>
+  <data name="Task.Status.Invalid" xml:space="preserve"><value>L-istatus irid ikun wieħed minn: Pending, InProgress, Completed.</value></data>
+  <data name="Task.Tags.TooMany" xml:space="preserve"><value>Biċċa xogħol tista' tiġi assoċjata ma' mhux aktar minn 50 tag.</value></data>
+  <data name="Task.Reorder.SelfPrev" xml:space="preserve"><value>Biċċa xogħol ma tistax tkun il-ġar ta' qabel ta' nfisha.</value></data>
+  <data name="Task.Reorder.SelfNext" xml:space="preserve"><value>Biċċa xogħol ma tistax tkun il-ġar ta' wara ta' nfisha.</value></data>
+  <data name="Task.Reorder.SameNeighbour" xml:space="preserve"><value>Il-ġirien ta' qabel u ta' wara jridu jkunu biċċiet differenti.</value></data>
+
+  <data name="Tag.Id.Required" xml:space="preserve"><value>L-ID tat-tag hija meħtieġa.</value></data>
+  <data name="Tag.Name.Required" xml:space="preserve"><value>L-isem tat-tag huwa meħtieġ.</value></data>
+  <data name="Tag.Name.TooLong" xml:space="preserve"><value>L-isem tat-tag irid ikun 50 karattri jew inqas.</value></data>
+
+  <data name="Task.NotFound" xml:space="preserve"><value>Il-biċċa xogħol bl-id '{0}' ma nstabitx.</value></data>
+  <data name="Task.TitleRequired" xml:space="preserve"><value>It-titlu tal-biċċa xogħol ma jistax ikun vojt.</value></data>
+  <data name="Task.OwnerRequired" xml:space="preserve"><value>Sid il-biċċa xogħol huwa meħtieġ.</value></data>
+  <data name="Task.TitleTooLong" xml:space="preserve"><value>It-titlu tal-biċċa xogħol ma jistax jaqbeż {0} karattri.</value></data>
+  <data name="Task.DescriptionTooLong" xml:space="preserve"><value>Id-deskrizzjoni tal-biċċa xogħol ma tistax taqbeż {0} karattri.</value></data>
+  <data name="Task.DueDateInPast" xml:space="preserve"><value>Id-data ta' skadenza ma tistax tkun fil-passat.</value></data>
+  <data name="Task.AlreadyCompleted" xml:space="preserve"><value>Il-biċċa xogħol diġà tlestiet.</value></data>
+  <data name="Task.NotCompleted" xml:space="preserve"><value>Il-biċċa xogħol mhix lesta, ma tistax tinfetaħ mill-ġdid.</value></data>
+  <data name="Task.UnknownStatus" xml:space="preserve"><value>Status mhux magħruf '{0}'.</value></data>
+  <data name="Task.UnknownPriority" xml:space="preserve"><value>Prijorità mhux magħrufa '{0}'.</value></data>
+
+  <data name="User.InvalidCredentials" xml:space="preserve"><value>L-email jew il-password mhumiex korretti.</value></data>
+  <data name="User.EmailRequired" xml:space="preserve"><value>L-email huwa meħtieġ.</value></data>
+  <data name="User.PasswordRequired" xml:space="preserve"><value>Il-password hija meħtieġa.</value></data>
+  <data name="User.RegistrationFailed" xml:space="preserve"><value>Ir-reġistrazzjoni falliet. Iċċekkja l-email u l-password, u erġa' pprova.</value></data>
+  <data name="User.LockedOut" xml:space="preserve"><value>Il-kont huwa msakkar minħabba tentattivi falluti ripetuti.</value></data>
+  <data name="User.InvalidRefreshToken" xml:space="preserve"><value>It-token tal-aġġornament mhix valida, skadiet, jew ġiet irrevokata.</value></data>
+
+  <data name="Tag.NotFound" xml:space="preserve"><value>Tag(s) ma nstabux: {0}.</value></data>
+  <data name="Tag.OwnerRequired" xml:space="preserve"><value>Sid it-tag huwa meħtieġ.</value></data>
+  <data name="Tag.NameRequired" xml:space="preserve"><value>L-isem tat-tag ma jistax ikun vojt.</value></data>
+  <data name="Tag.NameTooLong" xml:space="preserve"><value>L-isem tat-tag ma jistax jaqbeż {0} karattri.</value></data>
+  <data name="Tag.AlreadyExists" xml:space="preserve"><value>Diġà teżisti tag bl-isem '{0}' għal dan l-utent.</value></data>
+</root>

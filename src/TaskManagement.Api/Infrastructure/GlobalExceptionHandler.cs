@@ -1,15 +1,21 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using TaskManagement.Api.Resources;
 
 namespace TaskManagement.Api.Infrastructure;
 
 public sealed class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;
+    private readonly IStringLocalizer<ApiResource> _localizer;
 
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+    public GlobalExceptionHandler(
+        ILogger<GlobalExceptionHandler> logger,
+        IStringLocalizer<ApiResource> localizer)
     {
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async ValueTask<bool> TryHandleAsync(
@@ -22,7 +28,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         var problem = new ProblemDetails
         {
             Status = StatusCodes.Status500InternalServerError,
-            Title = "An unexpected error occurred",
+            Title = _localizer["Exception.UnexpectedTitle"],
             Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
             Instance = httpContext.Request.Path,
         };

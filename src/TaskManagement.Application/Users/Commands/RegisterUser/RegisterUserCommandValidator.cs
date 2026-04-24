@@ -1,22 +1,24 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using TaskManagement.Application.Resources;
 
 namespace TaskManagement.Application.Users.Commands.RegisterUser;
 
 public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
-    public RegisterUserCommandValidator()
+    public RegisterUserCommandValidator(IStringLocalizer<SharedResource> l)
     {
         RuleFor(x => x.Email)
-            .NotEmpty()
-            .EmailAddress()
-            .MaximumLength(256);
+            .NotEmpty().WithMessage(_ => l["Auth.Email.Required"])
+            .EmailAddress().WithMessage(_ => l["Auth.Email.Invalid"])
+            .MaximumLength(256).WithMessage(_ => l["Auth.Email.TooLong"]);
 
         RuleFor(x => x.Password)
-            .NotEmpty()
-            .MinimumLength(8)
-            .MaximumLength(128)
-            .Matches("[A-Z]").WithMessage("Password must contain an uppercase letter.")
-            .Matches("[a-z]").WithMessage("Password must contain a lowercase letter.")
-            .Matches("[0-9]").WithMessage("Password must contain a digit.");
+            .NotEmpty().WithMessage(_ => l["Auth.Password.Required"])
+            .MinimumLength(8).WithMessage(_ => l["Auth.Password.TooShort"])
+            .MaximumLength(128).WithMessage(_ => l["Auth.Password.TooLong"])
+            .Matches("[A-Z]").WithMessage(_ => l["Auth.Password.Upper"])
+            .Matches("[a-z]").WithMessage(_ => l["Auth.Password.Lower"])
+            .Matches("[0-9]").WithMessage(_ => l["Auth.Password.Digit"]);
     }
 }

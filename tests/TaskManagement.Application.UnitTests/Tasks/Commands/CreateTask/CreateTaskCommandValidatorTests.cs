@@ -1,10 +1,12 @@
+using TaskManagement.Application.Resources;
 using TaskManagement.Application.Tasks.Commands.CreateTask;
+using TaskManagement.Application.UnitTests.Common;
 
 namespace TaskManagement.Application.UnitTests.Tasks.Commands.CreateTask;
 
 public class CreateTaskCommandValidatorTests
 {
-    private readonly CreateTaskCommandValidator _validator = new();
+    private readonly CreateTaskCommandValidator _validator = new(new FakeStringLocalizer<SharedResource>());
 
     [Fact]
     public void Validate_ValidCommand_Should_Pass()

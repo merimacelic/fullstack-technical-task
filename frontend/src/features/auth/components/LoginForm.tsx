@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
@@ -18,6 +19,7 @@ interface LocationState {
 }
 
 export function LoginForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [login, { isLoading }] = useLoginMutation();
@@ -50,7 +52,7 @@ export function LoginForm() {
         }
         return;
       }
-      toast.error(parsed.title, { description: parsed.detail });
+      toast.error(t(parsed.titleKey), { description: t(parsed.detailKey) });
     }
   }
 
@@ -58,7 +60,7 @@ export function LoginForm() {
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
       <FormField
         id="email"
-        label="Email"
+        label={t('auth.fields.email')}
         required
         error={form.formState.errors.email?.message}
       >
@@ -76,7 +78,7 @@ export function LoginForm() {
 
       <FormField
         id="password"
-        label="Password"
+        label={t('auth.fields.password')}
         required
         error={form.formState.errors.password?.message}
       >
@@ -93,13 +95,13 @@ export function LoginForm() {
       </FormField>
 
       <Button type="submit" disabled={isLoading} aria-busy={isLoading} className="mt-2">
-        {isLoading ? 'Signing in…' : 'Sign in'}
+        {isLoading ? t('auth.login.submitting') : t('auth.login.submit')}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        No account?{' '}
+        {t('auth.login.noAccount')}{' '}
         <Link to="/register" className="font-medium text-foreground underline-offset-4 hover:underline">
-          Create one
+          {t('auth.login.createOne')}
         </Link>
       </p>
     </form>

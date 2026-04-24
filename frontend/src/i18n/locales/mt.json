@@ -1,0 +1,387 @@
+{
+  "common": {
+    "appName": "Ġestjoni ta' Biċċiet Xogħol",
+    "cancel": "Ikkanċella",
+    "confirm": "Ikkonferma",
+    "delete": "Ħassar",
+    "edit": "Editja",
+    "close": "Agħlaq",
+    "save": "Salva",
+    "working": "Qed naħdem…",
+    "backToTasks": "Lura għall-biċċiet xogħol",
+    "goToTasks": "Mur għall-biċċiet xogħol",
+    "back": "Lura",
+    "skipToMain": "Aqbeż għall-kontenut prinċipali",
+    "rootContainerMissing": "Il-kontenitur ewlieni ma nstabx — inbidel it-template tal-HTML?"
+  },
+  "header": {
+    "tooltip": {
+      "theme": "Tema",
+      "language": "Lingwa",
+      "account": "Kont"
+    },
+    "account": {
+      "menu": "Iftaħ il-menu tal-kont",
+      "signedInAs": "Illoggjat bħala",
+      "unknown": "mhux magħruf",
+      "signOut": "Oħroġ"
+    },
+    "theme": {
+      "toggle": "Ibdel it-tema",
+      "light": "Ċara",
+      "dark": "Skura",
+      "system": "Sistema"
+    },
+    "language": {
+      "toggle": "Ibdel il-lingwa",
+      "en": "English",
+      "mt": "Malti"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Merħba lura",
+      "description": "Illoggja biex timmaniġġja l-biċċiet xogħol tiegħek.",
+      "submit": "Illoggja",
+      "submitting": "Qed nillogga…",
+      "noAccount": "M'għandekx kont?",
+      "createOne": "Oħloq wieħed"
+    },
+    "register": {
+      "title": "Oħloq il-kont tiegħek",
+      "description": "Ibda torganizza l-biċċiet xogħol tiegħek fi ftit sekondi.",
+      "submit": "Oħloq kont",
+      "submitting": "Qed noħloq il-kont…",
+      "passwordHelp": "Mill-inqas 8 karattri b'ittra kapitali, ittra żgħira, u numru.",
+      "haveAccount": "Diġà għandek kont?",
+      "signIn": "Illoggja"
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password"
+    }
+  },
+  "tasks": {
+    "page": {
+      "title": "Biċċiet xogħol",
+      "subtitle": "Dak kollu li qed taħdem fuqu, f'post wieħed.",
+      "newTask": "Biċċa xogħol ġdida",
+      "tagsButton": "Tags"
+    },
+    "empty": {
+      "title": "L-ebda biċċa xogħol ma taqbel mal-filtri tiegħek.",
+      "subtitle": "Oħloq biċċa xogħol ġdida jew neħħi l-filtri biex tara aktar."
+    },
+    "errors": {
+      "loadFailed": "Ma stajniex intellgħu l-biċċiet xogħol."
+    },
+    "confirm": {
+      "delete": {
+        "title": "Ħassar il-biċċa xogħol?",
+        "description": "Ħassar \"{{title}}\"? Din l-azzjoni ma tistax titreġġa' lura."
+      }
+    },
+    "toast": {
+      "created": "Il-biċċa xogħol inħolqot.",
+      "updated": "Il-biċċa xogħol ġiet aġġornata.",
+      "deleted": "Il-biċċa xogħol tħassret."
+    },
+    "form": {
+      "dialog": {
+        "newTitle": "Biċċa xogħol ġdida",
+        "editTitle": "Editja l-biċċa xogħol",
+        "newDesc": "Żid biċċa xogħol ġdida mal-lista tiegħek. Tista' twaħħal tags u tagħżel il-prijorità.",
+        "editDesc": "Aġġorna d-dettalji tal-biċċa xogħol hawn taħt."
+      },
+      "fields": {
+        "title": "Titlu",
+        "description": "Deskrizzjoni",
+        "status": "Status",
+        "priority": "Prijorità",
+        "dueDate": "Data ta' skadenza",
+        "tags": "Tags"
+      },
+      "placeholders": {
+        "status": "Agħżel l-istatus",
+        "priority": "Agħżel il-prijorità"
+      },
+      "buttons": {
+        "cancel": "Ikkanċella",
+        "saving": "Qed nissejvja…",
+        "save": "Salva l-bidliet",
+        "create": "Oħloq il-biċċa xogħol"
+      }
+    },
+    "details": {
+      "back": "Lura",
+      "edit": "Editja",
+      "delete": "Ħassar",
+      "reopen": "Erġa' iftaħ",
+      "markComplete": "Immarka bħala lesta",
+      "noDescription": "L-ebda deskrizzjoni.",
+      "created": "Inħolqot",
+      "updated": "Aġġornata",
+      "completed": "Lestija",
+      "due": "Tiskadi fil-{{when}}",
+      "notFound": {
+        "title": "Ma nstabitx",
+        "description": "Din il-biċċa xogħol ma teżistix jew m'għandekx aċċess għaliha."
+      }
+    },
+    "card": {
+      "tooltip": {
+        "edit": "Editja",
+        "details": "Iftaħ id-dettalji",
+        "delete": "Ħassar"
+      },
+      "aria": {
+        "edit": "Editja {{title}}",
+        "details": "Iftaħ id-dettalji għal {{title}}",
+        "delete": "Ħassar {{title}}"
+      }
+    },
+    "status": {
+      "Pending": "Pendenti",
+      "InProgress": "Għaddejja",
+      "Completed": "Lestija",
+      "ariaLabel": "Status: {{label}}",
+      "picker": {
+        "trigger": "Ibdel l-istatus — bħalissa {{status}}",
+        "menu": "Ibdel l-istatus"
+      }
+    },
+    "priority": {
+      "Low": "Baxxa",
+      "Medium": "Medja",
+      "High": "Għolja",
+      "Critical": "Kritika",
+      "ariaLabel": "Prijorità: {{label}}",
+      "picker": {
+        "trigger": "Ibdel il-prijorità — bħalissa {{priority}}",
+        "menu": "Ibdel il-prijorità"
+      }
+    },
+    "filters": {
+      "search": "Fittex…",
+      "searchAria": "Fittex biċċiet xogħol",
+      "filterBy": "Iffiltra skont",
+      "sortBy": "Issortja skont",
+      "mobileButton": "Filtri u ordni",
+      "placeholders": {
+        "status": "Status",
+        "priority": "Prijorità",
+        "tag": "Tag",
+        "sort": "Ordni"
+      },
+      "aria": {
+        "statusFilter": "Iffiltra skont l-istatus",
+        "priorityFilter": "Iffiltra skont il-prijorità",
+        "tagFilter": "Iffiltra skont it-tag",
+        "clearStatus": "Neħħi l-filtru tal-istatus",
+        "clearPriority": "Neħħi l-filtru tal-prijorità",
+        "clearTag": "Neħħi l-filtru tat-tag",
+        "sortDirection": "Direzzjoni tal-ordni: {{direction}}. Ikklikkja biex tbiddel."
+      },
+      "sort": {
+        "Order": "Ordni manwali",
+        "Title": "Titlu",
+        "CreatedAt": "Inħolqot",
+        "UpdatedAt": "Aġġornata",
+        "DueDate": "Data ta' skadenza",
+        "Priority": "Prijorità",
+        "ascending": "Axxendenti (A → Ż)",
+        "descending": "Dixxendenti (Ż → A)",
+        "manual": "Id-direzzjoni hija stabbilita mill-ordni manwali",
+        "directionAscending": "axxendenti",
+        "directionDescending": "dixxendenti"
+      },
+      "tag": {
+        "searchPlaceholder": "Fittex tags…",
+        "emptyText": "L-ebda tag ma jaqbel."
+      },
+      "multi": {
+        "searchPlaceholder": "Fittex…",
+        "empty": "L-ebda riżultat.",
+        "selected_one": "{{count}} magħżul",
+        "selected_other": "{{count}} magħżula"
+      }
+    },
+    "pagination": {
+      "nav": "Paġnazzjoni tal-lista",
+      "showing": "Qed nuri {{start}}–{{end}} minn {{total}}",
+      "itemsPerPage": "Oġġetti kull paġna",
+      "previous": "Ta' qabel",
+      "next": "Li jmiss",
+      "pageOf": "Paġna {{page}} minn {{totalPages}}"
+    },
+    "view": {
+      "list": "Veduta lista",
+      "grid": "Veduta griglja",
+      "table": "Veduta tabella",
+      "toggle": "Modalità tal-veduta"
+    },
+    "dnd": {
+      "pickedUp": "Inġbret il-biċċa xogħol {{title}}.",
+      "movingOver": "Qed tiċċaqlaq il-biċċa xogħol {{title}} fuq {{target}}.",
+      "noLongerOver": "Il-biċċa xogħol {{title}} m'għadhiex fuq post fejn titniżżel.",
+      "droppedOver": "Il-biċċa xogħol {{title}} tniżżlet fuq {{target}}.",
+      "droppedBack": "Il-biċċa xogħol {{title}} reġgħet ġiet imqiegħda fil-post oriġinali.",
+      "cancelled": "Iċ-ċaqliq tal-biċċa xogħol {{title}} ġie kkanċellat.",
+      "instructions": "Agħfas space jew enter biex tiġbor biċċa xogħol. Uża t-tasti b'vleġeġ biex tiċċaqlaqha. Erġa' agħfas space jew enter biex tniżżilha. Agħfas escape biex tikkanċella."
+    },
+    "table": {
+      "headers": {
+        "statusToggle": "Xebh tal-istatus",
+        "title": "Titlu",
+        "status": "Status",
+        "priority": "Prijorità",
+        "due": "Skadenza",
+        "tags": "Tags",
+        "actions": "Azzjonijiet"
+      }
+    }
+  },
+  "tags": {
+    "manager": {
+      "title": "Tags",
+      "description": "Oħloq, biddel l-isem, jew neħħi tags. It-tags huma limitati għall-kont tiegħek.",
+      "addLabel": "Żid tag",
+      "placeholder": "eż. Dar",
+      "add": "Żid",
+      "adding": "Qed inżid…",
+      "empty": "L-ebda tag s'issa — żid wieħed hawn fuq biex tibda.",
+      "close": "Agħlaq",
+      "toast": {
+        "created": "It-tag inħoloq.",
+        "renamed": "It-tag inbidel l-isem.",
+        "deleted": "It-tag tħassar."
+      },
+      "confirmDelete": {
+        "title": "Ħassar it-tag?",
+        "description_one": "Dan se jneħħi \"{{name}}\" minn {{count}} biċċa xogħol. Il-biċċiet xogħol infushom ma jitħassrux.",
+        "description_other": "Dan se jneħħi \"{{name}}\" minn {{count}} biċċiet xogħol. Il-biċċiet xogħol infushom ma jitħassrux.",
+        "confirm": "Ħassar"
+      },
+      "aria": {
+        "rename": "Biddel l-isem tat-tag {{name}}",
+        "renameOne": "Biddel l-isem ta' {{name}}",
+        "delete": "Ħassar {{name}}",
+        "save": "Salva",
+        "cancel": "Ikkanċella t-tibdil tal-isem"
+      },
+      "taskCount_one": "{{count}} biċċa xogħol",
+      "taskCount_other": "{{count}} biċċiet xogħol"
+    },
+    "picker": {
+      "empty": "Waħħal tags…",
+      "selected_one": "{{count}} tag magħżul",
+      "selected_other": "{{count}} tags magħżula",
+      "searchPlaceholder": "Fittex jew oħloq tag…",
+      "emptyText": "L-ebda tag ma nstab.",
+      "createHeading": "Oħloq",
+      "createItem": "Oħloq tag \"{{name}}\"",
+      "creating": "Qed noħloq…",
+      "removeAria": "Neħħi t-tag {{name}}"
+    }
+  },
+  "errors": {
+    "unknown": {
+      "title": "Żball mhux magħruf",
+      "detail": "Ġara xi żball mhux magħruf."
+    },
+    "generic": {
+      "title": "Żball",
+      "detail": "Ġara xi żball."
+    },
+    "network": {
+      "title": "Żball tan-netwerk",
+      "detail": "Ma stajniex naslu għas-server. Iċċekkja l-konnessjoni u erġa' pprova."
+    },
+    "rateLimit": {
+      "title": "Wisq talbiet",
+      "detail": "Erġa' pprova fi ftit ħin."
+    },
+    "server": {
+      "title": "Żball fis-server",
+      "detail": "Ġara xi ħaġa ħażina min-naħa tagħna. Jekk jogħġbok erġa' pprova."
+    },
+    "refreshUnavailable": {
+      "title": "Servizz mhux disponibbli bħalissa",
+      "detail": "Ma stajniex inġeddu s-sessjoni tiegħek bħalissa. Jekk jogħġbok erġa' pprova fi ftit ħin."
+    },
+    "notFound": {
+      "title": "Ma nstabitx",
+      "detail": "Ir-riżors li tlabt ma nstabx."
+    },
+    "conflict": {
+      "title": "Kunflitt",
+      "detail": "It-talba tinkwadra ma' l-istat attwali."
+    },
+    "unauthorised": {
+      "title": "Mhux awtorizzat",
+      "detail": "Is-sessjoni tiegħek skadiet. Jekk jogħġbok illoggja mill-ġdid."
+    },
+    "forbidden": {
+      "title": "Projbit",
+      "detail": "M'intix permess twettaq din l-azzjoni."
+    },
+    "validation": {
+      "title": "Żball ta' validazzjoni",
+      "detail": "Jekk jogħġbok ikkoreġi l-iżbalji hawn taħt u erġa' pprova."
+    },
+    "boundary": {
+      "title": "Ġara xi ħaġa ħażina",
+      "detail": "Ġara xi żball mhux mistenni.",
+      "routeFallback": "Żball mhux mistenni fir-rotta."
+    },
+    "notFoundPage": {
+      "code": "404",
+      "title": "Paġna ma nstabitx",
+      "body": "Il-paġna li ppruvajt taċċessa ma teżistix. Erġa' lura għall-biċċiet xogħol tiegħek biex tkompli."
+    }
+  },
+  "validation": {
+    "auth": {
+      "email": {
+        "required": "L-email huwa meħtieġ.",
+        "tooLong": "L-email irid ikun 256 karattri jew inqas.",
+        "invalid": "Daħħal indirizz tal-email validu."
+      },
+      "password": {
+        "required": "Il-password hija meħtieġa.",
+        "tooShort": "Il-password trid tkun mill-inqas 8 karattri.",
+        "tooLong": "Il-password trid tkun 128 karattri jew inqas.",
+        "upper": "Il-password trid tinkludi ittra kapitali.",
+        "lower": "Il-password trid tinkludi ittra żgħira.",
+        "digit": "Il-password trid tinkludi numru."
+      }
+    },
+    "task": {
+      "title": {
+        "required": "It-titlu huwa meħtieġ.",
+        "tooLong": "It-titlu irid ikun 200 karattri jew inqas."
+      },
+      "description": {
+        "tooLong": "Id-deskrizzjoni trid tkun 2000 karattri jew inqas."
+      },
+      "priority": {
+        "required": "Agħżel il-prijorità."
+      },
+      "status": {
+        "required": "Agħżel l-istatus."
+      },
+      "dueDate": {
+        "past": "Id-data ta' skadenza ma tistax tkun fil-passat."
+      },
+      "tags": {
+        "max": "Biċċa xogħol tista' jkollha mhux aktar minn 50 tag."
+      }
+    },
+    "tag": {
+      "name": {
+        "required": "L-isem tat-tag huwa meħtieġ.",
+        "tooLong": "L-isem tat-tag irid ikun 50 karattri jew inqas."
+      }
+    }
+  }
+}

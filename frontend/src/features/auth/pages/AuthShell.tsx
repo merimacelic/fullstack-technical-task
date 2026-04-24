@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { LanguageSwitcher } from '@/shared/layout/LanguageSwitcher';
 import { ThemeToggle } from '@/shared/layout/ThemeToggle';
 import { Separator } from '@/shared/ui/separator';
 
@@ -9,6 +12,7 @@ interface AuthShellProps {
 }
 
 export function AuthShell({ title, description, children }: AuthShellProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between px-4 py-4">
@@ -16,9 +20,12 @@ export function AuthShell({ title, description, children }: AuthShellProps) {
           <span aria-hidden className="text-xl">
             ✓
           </span>
-          <span>Task Management</span>
+          <span>{t('common.appName')}</span>
         </span>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </header>
       <main className="flex flex-1 items-center justify-center px-4 py-10">
         <div className="w-full max-w-md rounded-lg border bg-card p-8 shadow-sm">

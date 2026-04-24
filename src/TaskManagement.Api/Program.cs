@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ using Serilog.Context;
 using TaskManagement.Api.Auth;
 using TaskManagement.Api.Endpoints;
 using TaskManagement.Api.Infrastructure;
+using TaskManagement.Api.Localization;
 using TaskManagement.Application;
 using TaskManagement.Application.Common.Abstractions;
 using TaskManagement.Infrastructure;
@@ -42,6 +44,20 @@ try
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+
+    // Localisation. Resources live next to marker classes in /Resources folders
+    // (SharedResource for domain/validator text, ApiResource for HTTP-layer
+    // titles). RequestLocalizationMiddleware picks the culture from, in order:
+    // ?culture= query string, a "culture" cookie, then Accept-Language.
+    builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+    builder.Services.Configure<RequestLocalizationOptions>(options =>
+    {
+        var supported = new[] { new CultureInfo("en"), new CultureInfo("mt") };
+        options.DefaultRequestCulture = new RequestCulture("en");
+        options.SupportedCultures = supported;
+        options.SupportedUICultures = supported;
+    });
+    builder.Services.AddScoped<IErrorLocalizer, ErrorLocalizer>();
 
     // JWT bearer authentication — token validation parameters read from the same
     // JwtOptions used by the token issuer, so a single config change stays in sync.
@@ -201,6 +217,11 @@ try
 
     app.UseSerilogRequestLogging();
     app.UseExceptionHandler();
+
+    // Culture negotiation — placed before endpoints so every downstream
+    // component (validators, IErrorLocalizer, IStringLocalizer<ApiResource>)
+    // observes the resolved CultureInfo on its request-scoped thread.
+    app.UseRequestLocalization();
 
     if (!app.Environment.IsDevelopment())
     {
