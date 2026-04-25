@@ -14,6 +14,7 @@ public interface IOrderKeyService
 
     Task<ErrorOr<decimal>> BetweenAsync(
         Guid ownerId,
+        TaskId movingId,
         TaskId? previousId,
         TaskId? nextId,
         CancellationToken ct);

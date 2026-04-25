@@ -42,6 +42,7 @@ internal sealed class OrderKeyService : IOrderKeyService
     // from its neighbours.
     public async Task<ErrorOr<decimal>> BetweenAsync(
         Guid ownerId,
+        TaskId movingId,
         TaskId? previousId,
         TaskId? nextId,
         CancellationToken ct)
@@ -58,7 +59,7 @@ internal sealed class OrderKeyService : IOrderKeyService
             return nextResult.Errors;
         }
 
-        var (prev, next) = NormaliseBounds(prevResult.Value, nextResult.Value);
+        var (prev, next) = await ResolveBoundsAsync(ownerId, movingId, prevResult.Value, nextResult.Value, ct);
 
         if (next <= prev)
         {
@@ -75,19 +76,79 @@ internal sealed class OrderKeyService : IOrderKeyService
             return prev + (gap / 2m);
         }
 
-        // Gap collapsed — renumber everyone, then recompute from the in-memory
-        // rebalanced keys. Reading from the returned list (rather than the DB)
-        // keeps the whole reorder in a single unsaved unit of work.
+        // Gap collapsed — renumber everyone, then recompute the midpoint from
+        // the in-memory rebalanced list. We can't re-query the DB here because
+        // RebalanceAsync mutates tracked entities without saving (saving is
+        // the caller's job, so the whole reorder commits atomically).
         var fresh = await RebalanceAsync(ownerId, ct);
-        var freshPrev = previousId is { } p
-            ? fresh.FirstOrDefault(t => t.Id == p)?.OrderKey
-            : null;
-        var freshNext = nextId is { } n
-            ? fresh.FirstOrDefault(t => t.Id == n)?.OrderKey
-            : null;
-        var bounds = NormaliseBounds(freshPrev, freshNext);
+        return MidpointFromList(fresh, movingId, previousId, nextId);
+    }
 
-        return bounds.Prev + ((bounds.Next - bounds.Prev) / 2m);
+    // Given the user-supplied prev/next hints, return the actual gap bounds in
+    // the database right now — i.e. the smallest existing OrderKey strictly
+    // greater than prev among the owner's other tasks, capped at nextHint if
+    // the caller supplied one. This is what makes serialised concurrent
+    // reorders into the same user-visible gap pick distinct midpoints: the
+    // second one sees the first one's insertion sitting between the hints and
+    // narrows the gap accordingly.
+    private async Task<(decimal Prev, decimal Next)> ResolveBoundsAsync(
+        Guid ownerId,
+        TaskId movingId,
+        decimal? prevHint,
+        decimal? nextHint,
+        CancellationToken ct)
+    {
+        var prev = prevHint ?? 0m;
+
+        var actualNext = await _db.Tasks
+            .Where(t => t.OwnerId == ownerId
+                && t.Id != movingId
+                && t.OrderKey > prev
+                && (nextHint == null || t.OrderKey <= nextHint))
+            .OrderBy(t => t.OrderKey)
+            .Select(t => (decimal?)t.OrderKey)
+            .FirstOrDefaultAsync(ct);
+
+        var next = (actualNext, nextHint) switch
+        {
+            (not null, not null) => Math.Min(actualNext.Value, nextHint.Value),
+            (not null, null) => actualNext.Value,
+            (null, not null) => nextHint.Value,
+            (null, null) => prev + (TaskItem.OrderKeyStep * 2m),
+        };
+
+        return (prev, next);
+    }
+
+    // In-memory equivalent of ResolveBoundsAsync, used after a rebalance when
+    // tracked entities have been mutated but not yet persisted.
+    private static decimal MidpointFromList(
+        IReadOnlyList<TaskItem> tasks,
+        TaskId movingId,
+        TaskId? previousId,
+        TaskId? nextId)
+    {
+        var prevHint = previousId is { } p ? tasks.FirstOrDefault(t => t.Id == p)?.OrderKey : null;
+        var nextHint = nextId is { } n ? tasks.FirstOrDefault(t => t.Id == n)?.OrderKey : null;
+        var prev = prevHint ?? 0m;
+
+        var actualNext = tasks
+            .Where(t => t.Id != movingId
+                && t.OrderKey > prev
+                && (nextHint == null || t.OrderKey <= nextHint))
+            .OrderBy(t => t.OrderKey)
+            .Select(t => (decimal?)t.OrderKey)
+            .FirstOrDefault();
+
+        var next = (actualNext, nextHint) switch
+        {
+            (not null, not null) => Math.Min(actualNext.Value, nextHint.Value),
+            (not null, null) => actualNext.Value,
+            (null, not null) => nextHint.Value,
+            (null, null) => prev + (TaskItem.OrderKeyStep * 2m),
+        };
+
+        return prev + ((next - prev) / 2m);
     }
 
     // Renumber all of a user's tasks in their current order with OrderKeyStep
@@ -111,13 +172,6 @@ internal sealed class OrderKeyService : IOrderKeyService
         }
 
         return tasks;
-    }
-
-    private static (decimal Prev, decimal Next) NormaliseBounds(decimal? previousKey, decimal? nextKey)
-    {
-        var prev = previousKey ?? 0m;
-        var next = nextKey ?? prev + (TaskItem.OrderKeyStep * 2m);
-        return (prev, next);
     }
 
     private async Task<ErrorOr<decimal?>> LoadNeighbourKeyAsync(

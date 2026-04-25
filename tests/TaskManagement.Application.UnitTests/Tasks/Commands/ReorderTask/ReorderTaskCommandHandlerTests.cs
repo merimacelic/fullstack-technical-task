@@ -129,4 +129,78 @@ public class ReorderTaskCommandHandlerTests
         movingReloaded.OrderKey.ShouldBeGreaterThan(aReloaded.OrderKey);
         movingReloaded.OrderKey.ShouldBeLessThan(bReloaded.OrderKey);
     }
+
+    // Regression guard for the race that the integration-test sibling
+    // (TasksConcurrencyTests) catches against real SQL Server: two reorders into
+    // the same gap, against a shared dataset and a shared singleton serializer,
+    // must produce distinct OrderKeys.
+    [Fact]
+    public async Task Handle_Should_Produce_DistinctKeys_When_TwoReordersHitSameGap()
+    {
+        var dbName = Guid.NewGuid().ToString();
+
+        // Seed the shared in-memory store once.
+        await using (var seedDb = new InMemoryApplicationDbContext(
+            new DbContextOptionsBuilder<InMemoryApplicationDbContext>()
+                .UseInMemoryDatabase(dbName)
+                .Options))
+        {
+            var a = TaskItem.Create(Owner, "A", null, TaskPriority.Low, null, FixedNow, 1000m).Value;
+            var b = TaskItem.Create(Owner, "B", null, TaskPriority.Low, null, FixedNow, 2000m).Value;
+            var c = TaskItem.Create(Owner, "C", null, TaskPriority.Low, null, FixedNow, 3000m).Value;
+            var d = TaskItem.Create(Owner, "D", null, TaskPriority.Low, null, FixedNow, 4000m).Value;
+            seedDb.Tasks.AddRange(a, b, c, d);
+            await seedDb.SaveChangesAsync(CancellationToken.None);
+        }
+
+        Guid aId, bId, cId, dId;
+        await using (var probe = new InMemoryApplicationDbContext(
+            new DbContextOptionsBuilder<InMemoryApplicationDbContext>()
+                .UseInMemoryDatabase(dbName)
+                .Options))
+        {
+            aId = (await probe.Tasks.SingleAsync(t => t.Title == "A")).Id.Value;
+            bId = (await probe.Tasks.SingleAsync(t => t.Title == "B")).Id.Value;
+            cId = (await probe.Tasks.SingleAsync(t => t.Title == "C")).Id.Value;
+            dId = (await probe.Tasks.SingleAsync(t => t.Title == "D")).Id.Value;
+        }
+
+        // Singleton across both requests — exactly how DI registers it in Program.cs.
+        var sharedSerializer = new PerOwnerReorderSerializer();
+
+        async Task<ErrorOr.ErrorOr<Application.Tasks.Responses.TaskResponse>> RunReorder(Guid moving)
+        {
+            await using var db = new InMemoryApplicationDbContext(
+                new DbContextOptionsBuilder<InMemoryApplicationDbContext>()
+                    .UseInMemoryDatabase(dbName)
+                    .Options);
+            var clock = new FakeDateTimeProvider(FixedNow);
+            var orderKeyService = new OrderKeyService(db, clock);
+            var handler = new ReorderTaskCommandHandler(
+                db, clock, FakeCurrentUser.WithId(Owner), orderKeyService, sharedSerializer);
+            return await handler.Handle(
+                new ReorderTaskCommand(moving, aId, bId),
+                CancellationToken.None);
+        }
+
+        var moveC = RunReorder(cId);
+        var moveD = RunReorder(dId);
+        await Task.WhenAll(moveC, moveD);
+
+        (await moveC).IsError.ShouldBeFalse();
+        (await moveD).IsError.ShouldBeFalse();
+
+        await using var assertDb = new InMemoryApplicationDbContext(
+            new DbContextOptionsBuilder<InMemoryApplicationDbContext>()
+                .UseInMemoryDatabase(dbName)
+                .Options);
+        var keys = await assertDb.Tasks
+            .Where(t => t.OwnerId == Owner)
+            .Select(t => t.OrderKey)
+            .ToListAsync();
+        keys.Count.ShouldBe(4);
+        keys.Distinct().Count().ShouldBe(
+            4,
+            customMessage: "concurrent reorders into the same gap produced duplicate OrderKeys");
+    }
 }

@@ -54,7 +54,7 @@ public sealed class ReorderTaskCommandHandler
         var previousId = request.PreviousTaskId is { } prev ? new TaskId(prev) : (TaskId?)null;
         var nextId = request.NextTaskId is { } next ? new TaskId(next) : (TaskId?)null;
 
-        var newKey = await _orderKeyService.BetweenAsync(ownerId, previousId, nextId, cancellationToken);
+        var newKey = await _orderKeyService.BetweenAsync(ownerId, id, previousId, nextId, cancellationToken);
         if (newKey.IsError)
         {
             return newKey.Errors;
