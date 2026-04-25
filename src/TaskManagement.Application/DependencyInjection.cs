@@ -26,6 +26,9 @@ public static class DependencyInjection
 
         services.AddScoped<IOrderKeyService, OrderKeyService>();
 
+        // Singleton: gate cache must outlive a request or the lock is meaningless.
+        services.AddSingleton<IReorderSerializer, PerOwnerReorderSerializer>();
+
         return services;
     }
 }

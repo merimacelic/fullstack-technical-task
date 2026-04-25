@@ -16,17 +16,20 @@ public sealed class ReorderTaskCommandHandler
     private readonly IDateTimeProvider _clock;
     private readonly ICurrentUser _currentUser;
     private readonly IOrderKeyService _orderKeyService;
+    private readonly IReorderSerializer _reorderSerializer;
 
     public ReorderTaskCommandHandler(
         IApplicationDbContext dbContext,
         IDateTimeProvider clock,
         ICurrentUser currentUser,
-        IOrderKeyService orderKeyService)
+        IOrderKeyService orderKeyService,
+        IReorderSerializer reorderSerializer)
     {
         _dbContext = dbContext;
         _clock = clock;
         _currentUser = currentUser;
         _orderKeyService = orderKeyService;
+        _reorderSerializer = reorderSerializer;
     }
 
     public async ValueTask<ErrorOr<TaskResponse>> Handle(
@@ -35,6 +38,10 @@ public sealed class ReorderTaskCommandHandler
     {
         var ownerId = _currentUser.UserId ?? throw new InvalidOperationException(
             "ReorderTask requires an authenticated user.");
+
+        // Serialise per-owner: covers the full read-compute-write so two
+        // concurrent reorders can't compute the same midpoint.
+        using var ownerLock = await _reorderSerializer.AcquireAsync(ownerId, cancellationToken);
 
         var id = new TaskId(request.Id);
         var task = await _dbContext.Tasks

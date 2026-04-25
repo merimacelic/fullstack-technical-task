@@ -17,7 +17,8 @@ public class ReorderTaskCommandHandlerTests
     {
         var clock = new FakeDateTimeProvider(now);
         var orderKeyService = new OrderKeyService(db, clock);
-        return new ReorderTaskCommandHandler(db, clock, FakeCurrentUser.WithId(userId), orderKeyService);
+        var reorderSerializer = new PerOwnerReorderSerializer();
+        return new ReorderTaskCommandHandler(db, clock, FakeCurrentUser.WithId(userId), orderKeyService, reorderSerializer);
     }
 
     [Fact]

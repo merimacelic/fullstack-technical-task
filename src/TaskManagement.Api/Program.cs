@@ -45,11 +45,12 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
-    // Localisation. Resources live next to marker classes in /Resources folders
-    // (SharedResource for domain/validator text, ApiResource for HTTP-layer
-    // titles). RequestLocalizationMiddleware picks the culture from, in order:
+    // Localisation. Marker types and resx files share a `…Resources`
+    // namespace, so ResourcesPath is left unset — adding it would double-
+    // prefix the lookup and every resource would miss.
+    // RequestLocalizationMiddleware picks the culture from, in order:
     // ?culture= query string, a "culture" cookie, then Accept-Language.
-    builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+    builder.Services.AddLocalization();
     builder.Services.Configure<RequestLocalizationOptions>(options =>
     {
         var supported = new[] { new CultureInfo("en"), new CultureInfo("mt") };
