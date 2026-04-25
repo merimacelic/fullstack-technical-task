@@ -239,23 +239,24 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
-    if (app.Environment.IsDevelopment())
+    // Swagger / Scalar are exposed in every environment. The endpoints behind
+    // them all require JWT, so the docs themselves don't widen the attack
+    // surface; making them available on the live deployment lets a reviewer
+    // poke the API directly without spinning up a local instance.
+    app.UseSwagger(options => options.RouteTemplate = "openapi/{documentName}.json");
+    app.UseSwaggerUI(options =>
     {
-        app.UseSwagger(options => options.RouteTemplate = "openapi/{documentName}.json");
-        app.UseSwaggerUI(options =>
-        {
-            options.SwaggerEndpoint("/openapi/v1.json", "Task Management API v1");
-            options.RoutePrefix = "swagger";
-            options.DocumentTitle = "Task Management API — Swagger";
-        });
-        app.MapScalarApiReference(options =>
-        {
-            options
-                .WithTitle("Task Management API")
-                .WithTheme(ScalarTheme.BluePlanet)
-                .WithOpenApiRoutePattern("/openapi/v1.json");
-        });
-    }
+        options.SwaggerEndpoint("/openapi/v1.json", "Task Management API v1");
+        options.RoutePrefix = "swagger";
+        options.DocumentTitle = "Task Management API — Swagger";
+    });
+    app.MapScalarApiReference(options =>
+    {
+        options
+            .WithTitle("Task Management API")
+            .WithTheme(ScalarTheme.BluePlanet)
+            .WithOpenApiRoutePattern("/openapi/v1.json");
+    });
 
     app.MapEndpoints();
 

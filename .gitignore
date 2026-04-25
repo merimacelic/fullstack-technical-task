@@ -68,3 +68,7 @@ frontend/playwright/.cache/
 ## OS
 .DS_Store
 Thumbs.db
+
+## Briefing material — kept locally for reference, not committed.
+*.pdf
+*.docx
