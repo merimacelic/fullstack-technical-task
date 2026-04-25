@@ -60,8 +60,8 @@ jobs:
             --logger "trx;LogFileName=architecture.trx"
 
       - name: Run integration tests (Testcontainers needs host Docker — available on ubuntu-latest)
-        run: dotnet test tests/TaskManagement.Api.IntegrationTests --configuration Release --no-build \
-          --logger "trx;LogFileName=integration.trx"
+        run: |
+          dotnet test tests/TaskManagement.Api.IntegrationTests --configuration Release --no-build --logger "trx;LogFileName=integration.trx"
 
       - name: Upload test results
         if: always()

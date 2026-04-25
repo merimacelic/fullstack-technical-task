@@ -6,8 +6,11 @@ name: Deploy to Azure
 #     which must complete first — see the workflow_run dependency).
 #   - manual dispatch: lets you redeploy on demand without pushing code.
 #
-# The deploy itself is idempotent: main.bicep is declarative, and Container
-# Apps rolls a new revision when the image digest changes.
+# Both paths short-circuit when AZURE_RESOURCE_GROUP isn't set as a repo
+# variable, so the workflow can sit committed in main without painting CI red
+# until Azure is actually configured (see deploy/azure/AZURE.md). The moment
+# you set the variable, deploys start running on every push to main with no
+# code change required.
 on:
   workflow_run:
     workflows: [CI]
@@ -26,10 +29,17 @@ permissions:
 
 jobs:
   deploy:
-    # Only run when the CI run that triggered us actually succeeded.
+    # Two gates:
+    #   1. Skip silently if Azure isn't configured yet (vars.AZURE_RESOURCE_GROUP
+    #      missing) — keeps the CI page green while the repo is still being set
+    #      up. The first thing AZURE.md tells you to do is set this variable,
+    #      so the auto-deploy starts the moment Azure is wired.
+    #   2. On the workflow_run trigger, only run if the CI run that fired us
+    #      actually succeeded (no point deploying broken code).
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success')
+      vars.AZURE_RESOURCE_GROUP != '' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: azure-prod
